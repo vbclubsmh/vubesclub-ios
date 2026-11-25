@@ -14,7 +14,8 @@ struct FeaturedEvents: View {
                     ForEach(events) { event in
                         card(event)
                             .containerRelativeFrame(.horizontal) { width, _ in
-                                events.count > 1 ? width - 26 : width
+                                guard width.isFinite else { return 0 }
+                                return max(0, events.count > 1 ? width - 26 : width)
                             }
                             .id(event.id)
                     }

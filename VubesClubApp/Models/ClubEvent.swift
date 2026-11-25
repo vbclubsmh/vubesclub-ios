@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 
 enum Sport: String, CaseIterable {
@@ -63,7 +64,7 @@ struct ClubEvent: Identifiable {
 
     var trainerID = "deniz"
     var accommodation: String?
-    var mapPosition: MapPosition?
+    var meetingCoordinate: CLLocationCoordinate2D?
     var distance: String?
     var meetingPoint = "Kaş Marina"
     var preparation = "Bring trail shoes, water, a light layer and sun protection."

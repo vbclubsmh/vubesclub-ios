@@ -5,12 +5,12 @@ struct VerificationScreen: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isFocused: Bool
 
-    private enum Operation { case verify, resend }
-    @State private var challenge: SMSChallenge
+    private enum Operation: Equatable { case verify, resend }
+    @State private var challenge: DemoOTPChallenge
     @State private var operation: Operation?
     @State private var errorMessage: String?
 
-    init(challenge: SMSChallenge) {
+    init(challenge: DemoOTPChallenge) {
         _challenge = State(initialValue: challenge)
     }
 
@@ -21,7 +21,7 @@ struct VerificationScreen: View {
 
     var body: some View {
         AccessLayout(title: "Enter your code",
-                     subtitle: "Enter the four-digit verification code.") {
+                     subtitle: "For this demo, use verification code 1111.") {
             VStack(alignment: .leading, spacing: 12) {
                 Overline("Verification code")
 
@@ -57,27 +57,20 @@ struct VerificationScreen: View {
             defer { self.operation = nil }
             errorMessage = nil
 
-            do {
-                switch operation {
-                case .verify:
-                    try await session.verify(challenge, code: code)
-                case .resend:
-                    let renewed = try await session.api.publicPost(
-                        "auth/otp-challenges/\(challenge.challengeId)/resend", as: SMSChallenge.self
-                    )
-                    try Task.checkCancellation()
-                    challenge = renewed
-                    code = ""
-                    isFocused = true
-                }
-            } catch {
-                if !Task.isCancelled {
-                    errorMessage = error.localizedDescription
+            switch operation {
+            case .verify:
+                guard code == "1111" else {
+                    errorMessage = "For this demo, enter 1111."
                     failedAttempts += 1
+                    return
                 }
+                session.signIn()
+            case .resend:
+                challenge = DemoOTPChallenge()
+                code = ""
+                isFocused = true
             }
         }
-        .defaultFocus($isFocused, true)
         .onAppear { isFocused = true }
         .sensoryFeedback(ClubHaptics.fieldFocus, trigger: isFocused) { _, focused in
             focused

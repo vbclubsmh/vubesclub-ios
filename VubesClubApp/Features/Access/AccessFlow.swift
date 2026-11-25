@@ -24,8 +24,7 @@ struct AccessFlow: View {
 }
 
 struct AccessLayout<Content: View, Action: View>: View {
-    @Environment(DemoSession.self) private var session
-    let title: String
+        let title: String
     let subtitle: String
     @ViewBuilder var content: Content
     @ViewBuilder var action: Action
@@ -33,7 +32,7 @@ struct AccessLayout<Content: View, Action: View>: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                ClubPhoto(name: session.appearance?.welcomeCover.url ?? "")
+                ClubPhoto(name: "Dusk")
                     .frame(height: 163)
                     .overlay(alignment: .bottom) {
                         Afterglow.shade().frame(height: 100)

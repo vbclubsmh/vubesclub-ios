@@ -1,15 +1,12 @@
 import SwiftUI
 
 struct SignInScreen: View {
-    @Environment(DemoSession.self) private var session
-
     let invited: Bool
     @State private var invitation = ""
     @State private var phone = ""
     @State private var fullName = ""
     @State private var confirmsAge = false
-    @State private var destination: SMSChallenge?
-    @State private var requesting = false
+    @State private var destination: DemoOTPChallenge?
     @State private var errorMessage: String?
     @FocusState private var phoneFocused: Bool
 
@@ -73,40 +70,15 @@ struct SignInScreen: View {
                         .accessibilityLabel("Sign-in error: \(errorMessage)")
                 }
 
-                PrimaryAction(title: requesting ? "Please wait…" : "Continue") {
-                    phoneFocused = false
+                PrimaryAction(title: "Continue") {
                     errorMessage = nil
-                    requesting = true
+                    destination = DemoOTPChallenge()
                 }
-                .disabled(!canContinue || requesting)
+                .disabled(!canContinue)
             }
         }
-        .task(id: requesting) {
-            guard requesting else { return }
-            defer { requesting = false }
-
-            do {
-                let result = try await session.api.publicPost(
-                    "auth/otp-challenges",
-                    body: SMSStart(
-                        purpose: invited ? "invitation" : "signIn", phone: "+90" + phone,
-                        invitationCode: invited ? invitation : nil,
-                        fullName: invited ? fullName : nil, adultDeclared: invited ? confirmsAge : nil
-                    ),
-                    as: SMSChallenge.self
-                )
-                try Task.checkCancellation()
-                destination = result
-            } catch {
-                if !Task.isCancelled { errorMessage = error.localizedDescription }
-            }
-        }
-        .defaultFocus($phoneFocused, !invited)
         .onAppear {
             if !invited { phoneFocused = true }
-        }
-        .onChange(of: destination) { _, route in
-            if route == nil && !invited { phoneFocused = true }
         }
         .sensoryFeedback(ClubHaptics.fieldFocus, trigger: phoneFocused) { _, focused in
             focused

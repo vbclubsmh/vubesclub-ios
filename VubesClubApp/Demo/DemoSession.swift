@@ -4,93 +4,27 @@ import Observation
 @MainActor
 @Observable
 final class DemoSession {
-    private(set) var appearance: AppAppearance?
-    let api: ClubAPI
-    private(set) var membership: ClubMembership?
-    private(set) var isRestoring: Bool
-    private(set) var restoreError: String?
+    private(set) var isSignedIn = false
     private(set) var accountScope = UUID()
-
-    var isSignedIn: Bool { membership?.nextAction == "events" }
-
-    init() {
-        api = ClubAPI.configured()
-        isRestoring = api.hasSession
-        api.onSessionExpired = { [weak self] in self?.reset() }
-    }
-
-    func loadAppearance() async {
-        do {
-            appearance = try await api.publicGet("app/appearance", as: AppAppearance.self)
-        } catch {
-            // Content stays empty while offline and can be retried when the scene becomes active.
-        }
-    }
-
-    func restore() async {
-        guard api.hasSession else {
-            reset()
-            return
-        }
-
-        let scope = accountScope
-        restoreError = nil
-        isRestoring = membership == nil
-
-        do {
-            let current = try await api.get("auth/session", as: ClubMembership.self)
-            guard scope == accountScope else { return }
-            membership = current
-        } catch {
-            guard scope == accountScope else { return }
-            restoreError = error.localizedDescription
-        }
-
-        isRestoring = false
-    }
-
-    func verify(_ challenge: SMSChallenge, code: String) async throws {
-        let response = try await api.publicPost(
-            "auth/otp-challenges/\(challenge.challengeId)/verify",
-            body: ["code": code], as: SMSVerification.self
-        )
-        try Task.checkCancellation()
-
-        if response.nextAction == "invitationRequired" {
-            throw ClubAPIError.invitationRequired
-        }
-
-        guard let tokens = response.tokens, let current = response.session else {
-            throw ClubAPIError.response
-        }
-
-        try api.accept(tokens)
-        accountScope = UUID()
-        membership = current
-        restoreError = nil
-    }
-
-    func signOut() {
-        api.signOut()
-        reset()
-    }
-
-    private func reset() {
-        membership = nil
-        isRestoring = false
-        restoreError = nil
-        accountScope = UUID()
-    }
 
     private(set) var savedEventIDs: Set<String> = []
     private(set) var bookingIDs: Set<String> = []
-
     private(set) var connectedTrainerIDs: Set<String> = []
     private(set) var trainerIntroductionIDs: Set<String> = []
     private(set) var eventRatings: [String: Int] = [:]
 
     var upcomingBookings: [ClubEvent] {
         DemoCatalog.upcoming.filter { bookingIDs.contains($0.id) }
+    }
+
+    func signIn() {
+        isSignedIn = true
+        accountScope = UUID()
+    }
+
+    func signOut() {
+        isSignedIn = false
+        accountScope = UUID()
     }
 
     func toggleSaved(eventID: String) {
@@ -148,4 +82,10 @@ struct EventFilter: Equatable {
     func matches(_ event: ClubEvent) -> Bool {
         (sport == nil || sport == event.sport) && (level == nil || level == event.level)
     }
+}
+
+struct DemoOTPChallenge: Hashable, Identifiable {
+    let id = UUID()
+    let codeLength = 4
+    let resendAt = Date.now.addingTimeInterval(30)
 }

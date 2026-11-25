@@ -1,3 +1,4 @@
+import MapKit
 import SwiftUI
 
 struct ExploreScreen: View {
@@ -6,21 +7,36 @@ struct ExploreScreen: View {
     @Binding var filter: EventFilter
 
     @State private var selectedID: ClubEvent.ID? = DemoCatalog.forest.id
+    @State private var camera: MapCameraPosition = .automatic
     @State private var showsFilter = false
 
     private var matchingEvents: [ClubEvent] {
-        DemoCatalog.upcoming.filter { $0.mapPosition != nil && filter.matches($0) }
+        DemoCatalog.upcoming.filter { $0.meetingCoordinate != nil && filter.matches($0) }
     }
 
     var body: some View {
         let events = matchingEvents
         let selectedEventID = events.first { $0.id == selectedID }?.id ?? events.first?.id
 
-        ZStack {
-            MapArtwork(image: "DiscoverTerrain")
-
-            mapPins(events, selectedEventID: selectedEventID)
-
+        Map(position: $camera, interactionModes: [.pan, .zoom]) {
+            ForEach(events) { event in
+                if let coordinate = event.meetingCoordinate {
+                    Annotation(event.title, coordinate: coordinate, anchor: .bottom) {
+                        Button {
+                            if selectedID == event.id { focus(event) } else { select(event.id) }
+                        } label: {
+                            MapPin(symbol: event.sport.symbol, selected: selectedEventID == event.id)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(event.title)
+                        .accessibilityAddTraits(selectedEventID == event.id ? .isSelected : [])
+                    }
+                }
+            }
+        }
+        .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
+        .environment(\.colorScheme, .dark)
+        .safeAreaInset(edge: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     ScreenTitle("Explore")
@@ -37,25 +53,31 @@ struct ExploreScreen: View {
                     .buttonStyle(.plain)
                 }
 
-                Spacer(minLength: 0)
-
+            }
+            .padding(.horizontal, Afterglow.inset)
+            .padding(.vertical, 8)
+            .background(Afterglow.background)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Group {
                 if !events.isEmpty {
                     eventCarousel(events, selectedEventID: selectedEventID)
                 } else {
                     Text("No matching events in Istanbul")
                         .font(Afterglow.body(13))
                         .frame(maxWidth: .infinity, minHeight: 54)
-                        .background(Afterglow.background, in: .rect(cornerRadius: 13))
                 }
             }
             .padding(.horizontal, Afterglow.inset)
-            .padding(.top, 5)
-            .padding(.bottom, 18)
+            .padding(.vertical, 8)
+            .background(Afterglow.background)
+        }
+        .onChange(of: selectedID) { _, id in
+            if let event = events.first(where: { $0.id == id }) { focus(event) }
         }
         .onChange(of: events.map(\.id), initial: true) { _, ids in
-            if let selectedID, ids.contains(selectedID) { return }
-
-            selectedID = ids.first
+            if !ids.contains(selectedID ?? "") { selectedID = ids.first }
+            showAll(events)
         }
         .sensoryFeedback(ClubHaptics.selection, trigger: selectedID)
         .sheet(isPresented: $showsFilter) {
@@ -65,57 +87,37 @@ struct ExploreScreen: View {
     }
 
     private func resetControl(_ events: [ClubEvent]) -> some View {
-        RoundControl(icon: "location", title: "Reset map selection") {
-            guard let event = events.first(where: { $0.id == DemoCatalog.forest.id }) ?? events.first else {
-                return
-            }
+        RoundControl(icon: "scope", title: "Show all matching events") {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) { showAll(events) }
+        }
+    }
 
-            select(event.id)
+    private func showAll(_ events: [ClubEvent]) {
+        let coordinates = events.compactMap(\.meetingCoordinate)
+        let latitudes = coordinates.map(\.latitude)
+        let longitudes = coordinates.map(\.longitude)
+        let south = latitudes.min() ?? 41.02
+        let north = latitudes.max() ?? 41.12
+        let west = longitudes.min() ?? 28.90
+        let east = longitudes.max() ?? 29.10
+        camera = .region(MKCoordinateRegion(
+            center: .init(latitude: (south + north) / 2, longitude: (west + east) / 2),
+            span: .init(latitudeDelta: max(0.045, (north - south) * 1.5),
+                        longitudeDelta: max(0.045, (east - west) * 1.4))
+        ))
+    }
+
+    private func focus(_ event: ClubEvent) {
+        guard let coordinate = event.meetingCoordinate else { return }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+            camera = .region(MKCoordinateRegion(center: coordinate,
+                                                latitudinalMeters: 4500, longitudinalMeters: 4500))
         }
     }
 
     private func select(_ eventID: ClubEvent.ID) {
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
             selectedID = eventID
-        }
-    }
-
-    private func mapPins(_ events: [ClubEvent], selectedEventID: ClubEvent.ID?) -> some View {
-        GeometryReader { geometry in
-            mapLabel("Belgrad Forest", x: 99, y: 226, in: geometry.size)
-            mapLabel("Bosphorus", x: 260, y: 333, in: geometry.size)
-            mapLabel("Sea of Marmara", x: 112, y: 477, in: geometry.size)
-
-            ForEach(events) { event in
-                let isSelected = selectedEventID == event.id
-
-                if let position = event.mapPosition {
-                    Button {
-                        select(event.id)
-                    } label: {
-                        MapPin(symbol: event.sport.symbol, selected: isSelected)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(event.title)
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                    .overlay(alignment: .bottom) {
-                        if isSelected {
-                            Text(event.title)
-                                .font(Afterglow.medium(10.4, relativeTo: .caption2))
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 6)
-                                .background(Afterglow.background, in: Capsule())
-                                .lineLimit(1)
-                                .fixedSize(horizontal: true, vertical: false)
-                                .offset(y: 31)
-                                .allowsHitTesting(false)
-                                .accessibilityHidden(true)
-                        }
-                    }
-                    .position(position.point(in: geometry.size))
-                    .zIndex(isSelected ? 1 : 0)
-                }
-            }
         }
     }
 
@@ -157,13 +159,6 @@ struct ExploreScreen: View {
                 }
             }
         }
-    }
-
-    private func mapLabel(_ title: String, x: Double, y: Double, in size: CGSize) -> some View {
-        Overline(title, color: Afterglow.ivory)
-            .shadow(color: .black, radius: 3)
-            .position(MapPosition(x: x, y: y).point(in: size))
-            .accessibilityHidden(true)
     }
 
     private func eventCard(_ event: ClubEvent) -> some View {

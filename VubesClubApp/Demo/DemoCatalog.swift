@@ -48,7 +48,7 @@ enum DemoCatalog {
             .init(time: "09:00", title: "Meet at the trailhead", details: "Warm-up · 15 min"),
             .init(time: "09:15", title: "Forest loop", details: "Guided group run · 1 hr")
         ])],
-        status: .upcoming, mapPosition: .init(x: 107, y: 270), distance: "6 km",
+        status: .upcoming, meetingCoordinate: .init(latitude: 41.1798, longitude: 28.9896), distance: "6 km",
         meetingPoint: "Belgrad Forest trailhead"
     )
 
@@ -58,7 +58,7 @@ enum DemoCatalog {
         program: [ProgramDay(sessions: [
             .init(time: "10:00", title: "Terrace mobility", details: "Guided session · 1 hr")
         ])],
-        status: .upcoming, trainerID: "ece", mapPosition: .init(x: 222, y: 241),
+        status: .upcoming, trainerID: "ece", meetingCoordinate: .init(latitude: 41.0484, longitude: 29.0267),
         meetingPoint: "Club terrace", preparation: "Bring a mat, water and comfortable layers."
     )
 
@@ -68,7 +68,7 @@ enum DemoCatalog {
         program: [ProgramDay(sessions: [
             .init(time: "09:00", title: "Ridge hike", details: "Guided hike · 2 hr")
         ])],
-        status: .upcoming, trainerID: "mert", mapPosition: .init(x: 281, y: 401), distance: "8 km",
+        status: .upcoming, trainerID: "mert", meetingCoordinate: .init(latitude: 41.1068, longitude: 29.0917), distance: "8 km",
         meetingPoint: "Ridge trailhead"
     )
 
@@ -80,7 +80,7 @@ enum DemoCatalog {
             .init(time: "08:15", title: "Bosphorus ride", details: "Guided group ride · 1 hr 30 min"),
             .init(time: "09:45", title: "Coffee by the water", details: "Group cool-down · 30 min")
         ])],
-        status: .upcoming, trainerID: "deniz", mapPosition: .init(x: 172, y: 359),
+        status: .upcoming, trainerID: "deniz", meetingCoordinate: .init(latitude: 41.0768, longitude: 29.0440),
         distance: "18 km", meetingPoint: "Bebek waterfront",
         preparation: "Bring a roadworthy bicycle, helmet, lights and water."
     )
@@ -92,7 +92,7 @@ enum DemoCatalog {
             .init(time: "09:30", title: "Meet on the promenade", details: "Group introduction · 15 min"),
             .init(time: "09:45", title: "Walk along the coast", details: "Easy group walk · 1 hr")
         ])],
-        status: .upcoming, trainerID: "mert", mapPosition: .init(x: 117, y: 425),
+        status: .upcoming, trainerID: "mert", meetingCoordinate: .init(latitude: 40.9647, longitude: 28.7995),
         distance: "4 km", meetingPoint: "Florya promenade",
         preparation: "Bring comfortable walking shoes, water and a light layer."
     )

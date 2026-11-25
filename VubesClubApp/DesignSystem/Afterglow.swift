@@ -90,21 +90,14 @@ struct Hairline: View {
 
 /// Resolves server media references against the configured API origin.
 struct ClubMediaImage: View {
-    @Environment(DemoSession.self) private var session
     let source: String
     var fit = false
 
     var body: some View {
-        AsyncImage(url: source.isEmpty ? nil : URL(string: source).flatMap { session.api.resourceURL($0) }) { phase in
-            if let image = phase.image {
-                if fit {
-                    image.resizable().scaledToFit()
-                } else {
-                    image.resizable().scaledToFill()
-                }
-            } else {
-                Afterglow.surface
-            }
+        Group {
+            Image(source)
+                .resizable()
+                .aspectRatio(contentMode: fit ? .fit : .fill)
         }
     }
 }
@@ -124,11 +117,10 @@ struct ClubPhoto: View {
 }
 
 struct Wordmark: View {
-    @Environment(DemoSession.self) private var session
     var width: CGFloat = 90
 
     var body: some View {
-        ClubMediaImage(source: session.appearance?.wordmark.url ?? "", fit: true)
+        ClubMediaImage(source: "Wordmark", fit: true)
             .frame(width: width)
             .accessibilityLabel("Vubes Club")
     }

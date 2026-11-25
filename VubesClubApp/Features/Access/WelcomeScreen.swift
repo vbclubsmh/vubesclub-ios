@@ -1,14 +1,13 @@
 import SwiftUI
 
 struct WelcomeScreen: View {
-    @Environment(DemoSession.self) private var session
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let startupPhase: StartupPhase
 
     var body: some View {
         ZStack {
-            ClubPhoto(name: session.appearance?.welcomeCover.url ?? "")
+            ClubPhoto(name: "Dusk")
                 .overlay(alignment: .bottom) {
                     GeometryReader { geometry in
                         Afterglow.shade()
@@ -17,7 +16,16 @@ struct WelcomeScreen: View {
                     }
                 }
                 .overlay(alignment: .top) {
-                    Color.black.opacity(0.14).frame(height: 182)
+                    LinearGradient(
+                        stops: [
+                            .init(color: .black.opacity(0.14), location: 0),
+                            .init(color: .black.opacity(0.14), location: 0.55),
+                            .init(color: .clear, location: 1)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 230)
                 }
                 .scaleEffect(startupPhase >= .backdrop || reduceMotion ? 1 : 1.07)
                 .ignoresSafeArea()
