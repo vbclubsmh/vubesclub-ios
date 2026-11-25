@@ -1,0 +1,184 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXFileReference section */
+		6F0C5A510000000000000006 /* VubesClubApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = VubesClubApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F0C5A510000000000000016 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		6F0C5A510000000000000003 /* VubesClubApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = VubesClubApp;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6F0C5A510000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6F0C5A510000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				6F0C5A510000000000000003 /* VubesClubApp */,
+				6F0C5A510000000000000004 /* Products */,
+				6F0C5A510000000000000016 /* App.xcconfig */,
+			);
+			sourceTree = "<group>";
+		};
+		6F0C5A510000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6F0C5A510000000000000006 /* VubesClubApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6F0C5A510000000000000005 /* VubesClubApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6F0C5A510000000000000011 /* Build configuration list for PBXNativeTarget "VubesClubApp" */;
+			buildPhases = (
+				6F0C5A510000000000000007 /* Sources */,
+				6F0C5A510000000000000008 /* Frameworks */,
+				6F0C5A510000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				6F0C5A510000000000000003 /* VubesClubApp */,
+			);
+			name = VubesClubApp;
+			productName = VubesClubApp;
+			productReference = 6F0C5A510000000000000006 /* VubesClubApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6F0C5A510000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 2720;
+			};
+			buildConfigurationList = 6F0C5A510000000000000010 /* Build configuration list for PBXProject "VubesClubApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6F0C5A510000000000000002;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 6F0C5A510000000000000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6F0C5A510000000000000005 /* VubesClubApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6F0C5A510000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6F0C5A510000000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6F0C5A510000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		6F0C5A510000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		6F0C5A510000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6F0C5A510000000000000016 /* App.xcconfig */;
+			buildSettings = {
+				DEVELOPMENT_TEAM = 6W2CYEZ7D5;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.app;
+			};
+			name = Debug;
+		};
+		6F0C5A510000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6F0C5A510000000000000016 /* App.xcconfig */;
+			buildSettings = {
+				DEVELOPMENT_TEAM = 6W2CYEZ7D5;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6F0C5A510000000000000010 /* Build configuration list for PBXProject "VubesClubApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6F0C5A510000000000000012 /* Debug */,
+				6F0C5A510000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6F0C5A510000000000000011 /* Build configuration list for PBXNativeTarget "VubesClubApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6F0C5A510000000000000014 /* Debug */,
+				6F0C5A510000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6F0C5A510000000000000001 /* Project object */;
+}

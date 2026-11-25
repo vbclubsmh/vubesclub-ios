@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>VubesAPIBaseURL</key>
+    <string>$(VUBES_API_BASE_URL)</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Vubes Club, geliştirme sırasında etkinlik ve görselleri yerel ağdaki API sunucusundan yüklemek için yerel ağa erişir.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Vubes Club uses your location when you choose to share it with participants on the active event map.</string>
+    <key>UILaunchScreen</key>
+    <dict>
+        <key>UIColorName</key>
+        <string>LaunchBlack</string>
+    </dict>
+    <key>UIAppFonts</key>
+    <array>
+        <string>Manrope.ttf</string>
+    </array>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+</dict>
+</plist>
