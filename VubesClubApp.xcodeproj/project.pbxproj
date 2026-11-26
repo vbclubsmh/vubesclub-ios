@@ -140,9 +140,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6F0C5A510000000000000016 /* App.xcconfig */;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 28PQ6563K4;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.mobile;
 			};
 			name = Debug;
@@ -151,8 +153,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6F0C5A510000000000000016 /* App.xcconfig */;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 28PQ6563K4;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.mobile;
 			};
 			name = Release;

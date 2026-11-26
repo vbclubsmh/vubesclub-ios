@@ -8,33 +8,33 @@ struct EventFilterSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Picker("Sport", selection: $filter.sport) {
-                    Text("All sports").tag(nil as Sport?)
+                Picker(L("Sport"), selection: $filter.sport) {
+                    Text(L("All sports")).tag(nil as Sport?)
 
                     ForEach(Sport.allCases, id: \.self) { sport in
-                        Text(sport.rawValue).tag(Optional(sport))
+                        Text(L(sport.rawValue)).tag(Optional(sport))
                     }
                 }
 
-                Picker("Level", selection: $filter.level) {
-                    Text("All levels").tag(nil as EventLevel?)
+                Picker(L("Level"), selection: $filter.level) {
+                    Text(L("All levels")).tag(nil as EventLevel?)
 
                     ForEach(EventLevel.allCases, id: \.self) { level in
-                        Text(level.rawValue).tag(Optional(level))
+                        Text(L(level.rawValue)).tag(Optional(level))
                     }
                 }
 
-                Button("Clear filters") {
+                Button(L("Clear filters")) {
                     filter = EventFilter()
                 }
             }
             .scrollContentBackground(.hidden)
             .background(Afterglow.background)
-            .navigationTitle("Sport & level")
+            .navigationTitle(L("Sport & level"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(L("Done")) { dismiss() }
                 }
             }
         }

@@ -60,7 +60,7 @@ struct ClubTabs: View {
                             .frame(width: 37, height: 28)
                             .background(isSelected ? Afterglow.ivory : .clear, in: Capsule())
 
-                        Text(tab.rawValue)
+                        Text(L(tab.rawValue))
                             .font(Afterglow.medium(10, relativeTo: .caption2))
                             .foregroundStyle(isSelected ? Afterglow.ivory : Afterglow.muted)
                             .multilineTextAlignment(.center)

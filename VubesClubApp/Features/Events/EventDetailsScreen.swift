@@ -31,13 +31,13 @@ struct EventDetailsScreen: View {
                     EventRatingSection(event: event)
                     Hairline()
 
-                    DisclosureGroup(event.accommodation == nil ? "What to bring & meeting point" : "What to bring & stay details", isExpanded: $showsPreparation) {
+                    DisclosureGroup(L(event.accommodation == nil ? "What to bring & meeting point" : "What to bring & stay details"), isExpanded: $showsPreparation) {
                         VStack(alignment: .leading, spacing: 9) {
-                            Text(event.preparation)
-                            Text("Meeting point: \(event.meetingPoint)")
+                            Text(L(event.preparation))
+                            Text(L("Meeting point: %@", L(event.meetingPoint)))
 
                             if let accommodation = event.accommodation {
-                                Text(accommodation)
+                                Text(L(accommodation))
                             }
                         }
                         .font(Afterglow.body(12))
@@ -70,7 +70,7 @@ struct EventDetailsScreen: View {
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Overline("\(event.sport.rawValue)  /  \(event.location)", color: Afterglow.ivory)
+                    Overline("\(L(event.sport.rawValue))  /  \(L(event.location))", color: Afterglow.ivory)
 
                     ScreenTitle(event.title, size: 36)
                         .lineSpacing(-2)
@@ -118,7 +118,7 @@ struct EventDetailsScreen: View {
             Text(trainer.name).font(Afterglow.body(11, relativeTo: .caption))
         }
         .foregroundStyle(Afterglow.muted)
-        .accessibilityLabel("Organizer: \(trainer.name)")
+        .accessibilityLabel(L("Organizer: %@", trainer.name))
     }
 
     private var activityPreview: some View {
@@ -134,7 +134,7 @@ struct EventDetailsScreen: View {
                     }
                     .overlay(alignment: .bottom) {
                         HStack {
-                            Label("Open activity map", systemImage: "map")
+                            Label(L("Open activity map"), systemImage: "map")
                             Spacer()
                             Image(systemName: "arrow.up.right").accessibilityHidden(true)
                         }
@@ -152,7 +152,7 @@ struct EventDetailsScreen: View {
         let booked = session.bookingIDs.contains(event.id)
 
         return NavigationLink(value: booked ? ClubRoute.confirmation(event.id) : ClubRoute.checkout(event.id)) {
-            Text(booked ? "View event pass" : "Join event")
+            Text(L(booked ? "View event pass" : "Join event"))
                 .font(Afterglow.medium(14))
                 .foregroundStyle(Afterglow.background)
                 .frame(maxWidth: .infinity, minHeight: 48)

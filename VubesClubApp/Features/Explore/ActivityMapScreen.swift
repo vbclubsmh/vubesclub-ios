@@ -56,7 +56,7 @@ struct ActivityMapScreen: View {
                     ScreenTitle("Activity map", size: 31)
                 }
 
-                Pill(title: "\(DemoCatalog.participants.count) participants", icon: "person.2")
+                Pill(title: L("%d participants", DemoCatalog.participants.count), icon: "person.2")
 
                 Spacer(minLength: 0)
 
@@ -81,8 +81,8 @@ struct ActivityMapScreen: View {
 
             VStack(alignment: .leading, spacing: 7) {
                 Overline(event.sport.rawValue, color: Afterglow.green)
-                Text(event.title).font(Afterglow.display(24, relativeTo: .title2))
-                Text("Sample locations").font(Afterglow.body(11.3)).foregroundStyle(Afterglow.muted)
+                Text(L(event.title)).font(Afterglow.display(24, relativeTo: .title2))
+                Text(L("Sample locations")).font(Afterglow.body(11.3)).foregroundStyle(Afterglow.muted)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

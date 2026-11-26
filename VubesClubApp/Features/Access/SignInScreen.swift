@@ -1,46 +1,21 @@
 import SwiftUI
 
 struct SignInScreen: View {
-    let invited: Bool
-    @State private var invitation = ""
     @State private var phone = ""
-    @State private var fullName = ""
-    @State private var confirmsAge = false
     @State private var destination: DemoOTPChallenge?
     @State private var errorMessage: String?
     @FocusState private var phoneFocused: Bool
 
     private var canContinue: Bool {
-        phone.count == 10 && (!invited || (
-            !invitation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                && !fullName.trimmingCharacters(in: .whitespaces).isEmpty
-                && confirmsAge
-        ))
+        phone.count == 10
     }
 
     var body: some View {
         AccessLayout(
-            title: invited ? "Your invitation" : "Sign in",
-            subtitle: invited ? "Enter your invitation and member details." : "Use your mobile number to continue."
+            title: "Sign in",
+            subtitle: "Use your mobile number to continue."
         ) {
             VStack(alignment: .leading, spacing: 12) {
-                if invited {
-                    Overline("Invitation code")
-                    TextField("Invitation code", text: $invitation)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .padding(12)
-                        .background(Afterglow.surface, in: .rect(cornerRadius: 8))
-
-                    Overline("Full name")
-                    TextField("Full name", text: $fullName)
-                        .textContentType(.name)
-                        .padding(12)
-                        .background(Afterglow.surface, in: .rect(cornerRadius: 8))
-
-                    Toggle("I am 18 or older", isOn: $confirmsAge)
-                }
-
                 Overline("Mobile number")
 
                 HStack(spacing: 16) {
@@ -50,12 +25,12 @@ struct SignInScreen: View {
                         .fill(Afterglow.border)
                         .frame(width: 1, height: 28)
 
-                    TextField("5XX XXX XX XX", text: phoneInput)
+                    TextField("5XX XXX XX XX", text: $phone)
                         .font(Afterglow.body(15))
                         .keyboardType(.numberPad)
                         .textContentType(.telephoneNumber)
                         .focused($phoneFocused)
-                        .accessibilityLabel("Mobile number")
+                        .accessibilityLabel(L("Mobile number"))
                 }
                 .padding(.horizontal, 16)
                 .frame(minHeight: 57)
@@ -65,9 +40,9 @@ struct SignInScreen: View {
         } action: {
             VStack(spacing: 10) {
                 if let errorMessage {
-                    Text(errorMessage)
+                    Text(L(errorMessage))
                         .font(Afterglow.body(12))
-                        .accessibilityLabel("Sign-in error: \(errorMessage)")
+                        .accessibilityLabel(L("Sign-in error: %@", L(errorMessage)))
                 }
 
                 PrimaryAction(title: "Continue") {
@@ -77,8 +52,13 @@ struct SignInScreen: View {
                 .disabled(!canContinue)
             }
         }
+        .onChange(of: phone) { _, value in
+            let clean = SignUpScreen.turkishMobile(value)
+            if clean != value { phone = clean }
+        }
+        .defaultFocus($phoneFocused, true)
         .onAppear {
-            if !invited { phoneFocused = true }
+            phoneFocused = true
         }
         .sensoryFeedback(ClubHaptics.fieldFocus, trigger: phoneFocused) { _, focused in
             focused
@@ -92,10 +72,4 @@ struct SignInScreen: View {
         }
     }
 
-    private var phoneInput: Binding<String> {
-        Binding(
-            get: { phone },
-            set: { phone = String($0.filter { $0.isASCII && $0.isNumber }.prefix(10)) }
-        )
-    }
 }

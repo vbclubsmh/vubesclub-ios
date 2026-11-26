@@ -23,7 +23,7 @@ struct CheckoutScreen: View {
                     summaryRow("1 participant", icon: "person")
 
                     let days = event.program.count
-                    summaryRow(days == 1 ? "Full day program" : "Full \(days)-day program", icon: "calendar")
+                    summaryRow(days == 1 ? "Full day program" : L("Full %d-day program", days), icon: "calendar")
 
                     if event.accommodation != nil {
                         summaryRow("Accommodation included", icon: "bed.double")
@@ -32,7 +32,7 @@ struct CheckoutScreen: View {
                 .padding(.top, 7)
 
                 HStack {
-                    Text("Total").font(Afterglow.medium(15))
+                    Text(L("Total")).font(Afterglow.medium(15))
                     Spacer()
 
                     Text(event.priceLabel)
@@ -43,7 +43,7 @@ struct CheckoutScreen: View {
                 Button {
                     acceptsTerms.toggle()
                 } label: {
-                    Label("I agree to the participation terms.",
+                    Label(L("I agree to the participation terms."),
                           systemImage: acceptsTerms ? "checkmark.square.fill" : "square")
                         .font(Afterglow.body(12))
                         .foregroundStyle(Afterglow.muted)
@@ -78,8 +78,8 @@ struct CheckoutScreen: View {
                 .frame(width: 112, height: 102)
 
             VStack(alignment: .leading, spacing: 9) {
-                Overline("\(event.date)  /  \(event.location)")
-                Text(event.title)
+                Overline("\(L(event.date))  /  \(L(event.location))")
+                Text(L(event.title))
                     .font(Afterglow.display(25, relativeTo: .title2))
                     .fixedSize(horizontal: false, vertical: true)
             }

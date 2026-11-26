@@ -29,13 +29,13 @@ struct VerificationScreen: View {
 
                 HStack {
                     TimelineView(.periodic(from: .now, by: 1)) { tick in
-                        Button("Resend code") { operation = .resend }
+                        Button(L("Resend code")) { operation = .resend }
                             .disabled(operation != nil || tick.date < challenge.resendAt)
                     }
 
                     Spacer()
 
-                    Button("Change number") { dismiss() }
+                    Button(L("Change number")) { dismiss() }
                         .foregroundStyle(Afterglow.muted)
                 }
                 .font(Afterglow.medium(12.5))
@@ -43,7 +43,7 @@ struct VerificationScreen: View {
                 .frame(minHeight: 44)
 
                 if let errorMessage {
-                    Text(errorMessage)
+                    Text(L(errorMessage))
                         .font(Afterglow.body(11, relativeTo: .caption))
                         .foregroundStyle(Afterglow.muted)
                 }
@@ -71,6 +71,12 @@ struct VerificationScreen: View {
                 isFocused = true
             }
         }
+        .onChange(of: code) { _, value in
+            let clean = String(value.filter { $0.isASCII && $0.isNumber }.prefix(codeLength))
+            if clean != value { code = clean }
+            errorMessage = nil
+        }
+        .defaultFocus($isFocused, true)
         .onAppear { isFocused = true }
         .sensoryFeedback(ClubHaptics.fieldFocus, trigger: isFocused) { _, focused in
             focused
@@ -99,25 +105,16 @@ struct VerificationScreen: View {
         }
         .accessibilityHidden(true)
         .overlay {
-            TextField("", text: codeInputValue)
+            TextField("", text: $code)
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .focused($isFocused)
                 .foregroundStyle(.clear)
                 .tint(.clear)
-                .accessibilityLabel("Verification code")
+                .accessibilityLabel(L("Verification code"))
         }
         .contentShape(Rectangle())
         .onTapGesture { isFocused = true }
     }
 
-    private var codeInputValue: Binding<String> {
-        Binding(
-            get: { code },
-            set: { value in
-                code = String(value.filter { $0.isASCII && $0.isNumber }.prefix(codeLength))
-                errorMessage = nil
-            }
-        )
-    }
 }

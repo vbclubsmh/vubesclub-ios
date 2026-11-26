@@ -13,7 +13,7 @@ struct ItineraryView: View {
                 HStack(alignment: .firstTextBaseline) {
                     ScreenTitle("Itinerary", size: 30)
                     Spacer()
-                    Overline("\(days[selectedDay].sessions.count) sessions", color: Afterglow.accent)
+                    Overline(L("%d sessions", days[selectedDay].sessions.count), color: Afterglow.accent)
                 }
 
                 HStack(spacing: 7) {
@@ -21,7 +21,7 @@ struct ItineraryView: View {
                         Button {
                             selectedDay = index
                         } label: {
-                            Pill(title: "Day \(index + 1)", selected: index == selectedDay)
+                            Pill(title: L("Day %d", index + 1), selected: index == selectedDay)
                         }
                         .buttonStyle(.plain)
                     }
@@ -61,9 +61,9 @@ struct ItineraryView: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(session.title).font(Afterglow.medium(14))
+                Text(L(session.title)).font(Afterglow.medium(14))
 
-                Text(session.details)
+                Text(L(session.details))
                     .font(Afterglow.body(11.2, relativeTo: .caption))
                     .foregroundStyle(Afterglow.muted)
             }

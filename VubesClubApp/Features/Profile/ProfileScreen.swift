@@ -34,7 +34,7 @@ struct ProfileScreen: View {
                 VStack(alignment: .leading, spacing: 5) {
                     ScreenTitle("Ada Kaya", size: 36)
 
-                    Text("Club member")
+                    Text(L("Club member"))
                         .font(Afterglow.body(13))
                         .foregroundStyle(Afterglow.muted)
                 }
@@ -45,6 +45,7 @@ struct ProfileScreen: View {
 
                     row("Account settings", icon: "person.crop.circle") { selectedPanel = .account }
                     row("Privacy", icon: "lock") { selectedPanel = .privacy }
+                    languageRow
                     row("Sign out", icon: "rectangle.portrait.and.arrow.right") { session.signOut() }
                 }
             }
@@ -58,9 +59,9 @@ struct ProfileScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 ScreenTitle(panel.rawValue, size: 32)
 
-                Text(panel == .account
+                Text(L(panel == .account
                      ? "Ada Kaya · Club member"
-                     : "Your profile is private. Activity maps use sample locations.")
+                     : "Your profile is private. Activity maps use sample locations."))
                     .font(Afterglow.body(14))
                     .foregroundStyle(Afterglow.muted)
 
@@ -73,6 +74,26 @@ struct ProfileScreen: View {
         }
     }
 
+    private var languageRow: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 13) {
+                Image(systemName: "globe")
+                    .font(.system(size: 17))
+                    .foregroundStyle(Afterglow.ivory)
+
+                Text(L("Language")).font(Afterglow.medium(14))
+
+                Spacer()
+
+                LanguageSwitch()
+            }
+            .padding(.horizontal, 4)
+            .frame(minHeight: 66)
+
+            Hairline()
+        }
+    }
+
     private func row(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
         VStack(spacing: 0) {
             Button(action: action) {
@@ -81,7 +102,7 @@ struct ProfileScreen: View {
                         .font(.system(size: 17))
                         .foregroundStyle(Afterglow.ivory)
 
-                    Text(title).font(Afterglow.medium(14))
+                    Text(L(title)).font(Afterglow.medium(14))
 
                     Spacer()
 

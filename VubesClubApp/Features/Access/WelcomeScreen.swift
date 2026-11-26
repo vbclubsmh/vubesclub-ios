@@ -56,8 +56,8 @@ struct WelcomeScreen: View {
                 .offset(y: isRevealed(at: .headline) || reduceMotion ? 0 : 18)
 
                 VStack(spacing: 9) {
-                    NavigationLink(value: AccessFlow.Route.signIn(invited: false)) {
-                        Text("Sign in")
+                    NavigationLink(value: AccessFlow.Route.signUp) {
+                        Text(L("Sign up"))
                             .font(Afterglow.medium(14))
                             .foregroundStyle(Afterglow.background)
                             .frame(maxWidth: .infinity, minHeight: 48)
@@ -71,8 +71,8 @@ struct WelcomeScreen: View {
                     }
                     .buttonStyle(.plain)
 
-                    NavigationLink(value: AccessFlow.Route.signIn(invited: true)) {
-                        Text("I have an invitation code")
+                    NavigationLink(value: AccessFlow.Route.signIn) {
+                        Text(L("Already a member? Sign in"))
                             .font(Afterglow.medium(13))
                             .foregroundStyle(Afterglow.ivory)
                             .frame(minHeight: 44)
@@ -85,6 +85,12 @@ struct WelcomeScreen: View {
             .padding(.horizontal, Afterglow.inset)
             .padding(.bottom, 11)
         }
+        .overlay(alignment: .topTrailing) {
+            LanguageSwitch()
+                .padding(.trailing, Afterglow.inset)
+                .padding(.top, 8)
+                .opacity(isRevealed(at: .brand) ? 1 : 0)
+        }
     }
 
     private func isRevealed(at phase: StartupPhase) -> Bool {
@@ -92,7 +98,7 @@ struct WelcomeScreen: View {
     }
 
     private var slogan: some View {
-        Text("More than fitness.")
+        Text(verbatim: "More than fitness.")
             .font(Afterglow.display(43))
             .tracking(-1.5)
             .multilineTextAlignment(.center)

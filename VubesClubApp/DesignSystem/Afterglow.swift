@@ -54,7 +54,7 @@ struct ScreenTitle: View {
     }
 
     var body: some View {
-        Text(title)
+        Text(L(title))
             .font(Afterglow.display(size))
             .tracking(-1.3)
             .accessibilityAddTraits(.isHeader)
@@ -72,7 +72,7 @@ struct Overline: View {
     }
 
     var body: some View {
-        Text(title.uppercased())
+        Text(AppLanguage.shared.uppercase(L(title)))
             .font(Afterglow.medium(9.5, relativeTo: .caption2))
             .tracking(1.55)
             .foregroundStyle(color)

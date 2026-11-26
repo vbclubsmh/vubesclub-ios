@@ -26,7 +26,7 @@ struct MyEventsScreen: View {
                     EventListRow(event: DemoCatalog.past)
                 } else {
                     if session.upcomingBookings.isEmpty {
-                        Text("Your confirmed bookings will appear here.")
+                        Text(L("Your confirmed bookings will appear here."))
                             .font(Afterglow.body(13))
                             .foregroundStyle(Afterglow.muted)
                     }
@@ -67,7 +67,7 @@ struct MyEventsScreen: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "ticket")
-                Text("View event pass").font(Afterglow.medium(13.4))
+                Text(L("View event pass")).font(Afterglow.medium(13.4))
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 11))
             }
@@ -89,14 +89,14 @@ private struct LiveEventCard: View {
                     .frame(width: 100, height: 129)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Label("In progress", systemImage: "circle.fill")
+                    Label(L("In progress"), systemImage: "circle.fill")
                         .font(Afterglow.medium(9.5, relativeTo: .caption))
                         .foregroundStyle(Afterglow.green)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
                         .background(Afterglow.green.opacity(0.12), in: Capsule())
 
-                    Text(event.title)
+                    Text(L(event.title))
                         .font(Afterglow.display(22, relativeTo: .title2))
                         .tracking(-0.35)
 
@@ -107,7 +107,7 @@ private struct LiveEventCard: View {
                             }
                         }
 
-                        Text("Open event").font(Afterglow.medium(11.5))
+                        Text(L("Open event")).font(Afterglow.medium(11.5))
                         Spacer(minLength: 0)
                         Image(systemName: "arrow.up.right").font(.system(size: 12))
                     }
@@ -118,6 +118,6 @@ private struct LiveEventCard: View {
             .background(Afterglow.surface, in: .rect(cornerRadius: 12))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Open \(event.title), in progress")
+        .accessibilityLabel(L("Open %@, in progress", L(event.title)))
     }
 }

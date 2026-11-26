@@ -23,7 +23,7 @@ struct ClubScreen: View {
                     Overline("The people behind the sessions", color: Afterglow.accent)
                     ScreenTitle("Club")
 
-                    Text("Meet the coaches, get to know their crews and see what members thought of their last sessions.")
+                    Text(L("Meet the coaches, get to know their crews and see what members thought of their last sessions."))
                         .font(Afterglow.body(13))
                         .foregroundStyle(Afterglow.muted)
                 }
@@ -39,7 +39,7 @@ struct ClubScreen: View {
                     ContentUnavailableView(
                         "No trainers followed yet",
                         systemImage: "person.2",
-                        description: Text("Follow a trainer to find their crew and events here.")
+                        description: Text(L("Follow a trainer to find their crew and events here."))
                     )
                 }
             }
@@ -60,7 +60,7 @@ struct ClubScreen: View {
         VStack(alignment: .leading, spacing: 20) {
             TrainerCard(trainer: trainer)
             crewSection(trainer)
-            eventsSection("Upcoming with \(trainer.name.split(separator: " ").first ?? "")",
+            eventsSection(L("Upcoming with %@", String(trainer.name.split(separator: " ").first ?? "")),
                           events: DemoClub.events(for: trainer, status: .upcoming))
             eventsSection("Rated experiences", events: DemoClub.events(for: trainer, status: .past))
         }

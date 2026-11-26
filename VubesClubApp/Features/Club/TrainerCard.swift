@@ -25,11 +25,11 @@ struct TrainerCard: View {
                 Overline("Personal trainer", color: Afterglow.accent)
                 ScreenTitle(trainer.name, size: 28)
 
-                Text(trainer.specialty)
+                Text(L(trainer.specialty))
                     .font(Afterglow.medium(13))
                     .foregroundStyle(Afterglow.ivory)
 
-                Text(trainer.bio)
+                Text(L(trainer.bio))
                     .font(Afterglow.body(12.5))
                     .foregroundStyle(Afterglow.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -48,7 +48,7 @@ struct TrainerCard: View {
                 Button {
                     session.toggleTrainerConnection(trainer)
                 } label: {
-                    Label(connected ? "Following" : "Follow trainer",
+                    Label(L(connected ? "Following" : "Follow trainer"),
                           systemImage: connected ? "checkmark" : "person.badge.plus")
                         .font(Afterglow.medium(13))
                         .foregroundStyle(connected ? Afterglow.ivory : Afterglow.background)
@@ -63,7 +63,7 @@ struct TrainerCard: View {
                 Button {
                     showsIntroduction = true
                 } label: {
-                    Label(hasIntroduction ? "Introduction requested" : "Request an introduction",
+                    Label(L(hasIntroduction ? "Introduction requested" : "Request an introduction"),
                           systemImage: hasIntroduction ? "checkmark.circle" : "bubble.left")
                         .font(Afterglow.medium(12))
                         .foregroundStyle(Afterglow.ivory)
@@ -81,11 +81,11 @@ struct TrainerCard: View {
         .onChange(of: trainer.id) { _, _ in
             showsIntroduction = false
         }
-        .alert("Meet \(trainer.name)", isPresented: $showsIntroduction) {
-            Button("Cancel", role: .cancel) {}
-            Button("Request introduction") { session.requestTrainerIntroduction(trainer) }
+        .alert(L("Meet %@", trainer.name), isPresented: $showsIntroduction) {
+            Button(L("Cancel"), role: .cancel) {}
+            Button(L("Request introduction")) { session.requestTrainerIntroduction(trainer) }
         } message: {
-            Text("Save a demo request to connect with this trainer.")
+            Text(L("Save a demo request to connect with this trainer."))
         }
     }
 

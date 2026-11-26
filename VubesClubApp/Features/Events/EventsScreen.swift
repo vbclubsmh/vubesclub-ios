@@ -9,10 +9,11 @@ struct EventsScreen: View {
 
     @State private var savedOnly = false
     @State private var showsFilter = false
+    @State private var category = EventCategory.all
 
     private var visibleEvents: [ClubEvent] {
         DemoCatalog.upcoming.filter {
-            filter.matches($0) && (!savedOnly || session.savedEventIDs.contains($0.id))
+            filter.matches($0) && category.matches($0) && (!savedOnly || session.savedEventIDs.contains($0.id))
         }
     }
 
@@ -26,7 +27,7 @@ struct EventsScreen: View {
                         Overline("The Vubes calendar", color: Afterglow.accent)
                         ScreenTitle("Events")
 
-                        Text("Find your next trail, session or weekend away.")
+                        Text(L("Find your next trail, session or weekend away."))
                             .font(Afterglow.body(13))
                             .foregroundStyle(Afterglow.muted)
                     }
@@ -36,20 +37,30 @@ struct EventsScreen: View {
                     RoundControl(icon: "map", title: "Explore map", action: openMap)
                 }
 
-                HStack(spacing: 7) {
-                    Button { savedOnly = false } label: {
-                        Pill(title: "All", selected: !savedOnly)
-                    }
+                ScrollView(.horizontal) {
+                    HStack(spacing: 7) {
+                        ForEach(EventCategory.allCases, id: \.self) { item in
+                            Button {
+                                category = item
+                                savedOnly = false
+                            } label: {
+                                Pill(title: item.title, selected: !savedOnly && category == item)
+                            }
+                        }
 
-                    Button { savedOnly = true } label: {
-                        Pill(title: "Saved", icon: "bookmark", selected: savedOnly)
-                    }
+                        Button { savedOnly.toggle() } label: {
+                            Pill(title: "Saved", icon: "bookmark", selected: savedOnly)
+                        }
 
-                    Button { showsFilter = true } label: {
-                        Pill(title: "Filter", icon: "slider.horizontal.3", selected: filter != EventFilter())
+                        Button { showsFilter = true } label: {
+                            Pill(title: "Filter", icon: "slider.horizontal.3", selected: filter != EventFilter())
+                        }
                     }
+                    .padding(.horizontal, Afterglow.inset)
                 }
+                .scrollIndicators(.hidden)
                 .buttonStyle(.plain)
+                .padding(.horizontal, -Afterglow.inset)
                 .padding(.bottom, 1)
 
                 if !events.isEmpty {
@@ -64,14 +75,14 @@ struct EventsScreen: View {
                         HStack {
                             ScreenTitle("Coming up", size: 29)
                             Spacer()
-                            Overline("\(events.count) events")
+                            Overline(L("%d events", events.count))
                         }
 
                         eventList(events)
                     }
                 } else {
                     ContentUnavailableView(
-                        savedOnly ? "No saved events" : "No matching events",
+                        L(savedOnly ? "No saved events" : "No matching events"),
                         systemImage: savedOnly ? "bookmark" : "slider.horizontal.3"
                     )
                 }

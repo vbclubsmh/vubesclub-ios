@@ -38,7 +38,8 @@ enum DemoCatalog {
             ])
         ],
         status: .upcoming,
-        accommodation: "Two nights at the club’s lodge are included in the full program."
+        accommodation: "Two nights at the club’s lodge are included in the full program.",
+        isCamp: true
     )
 
     static let forest = ClubEvent(

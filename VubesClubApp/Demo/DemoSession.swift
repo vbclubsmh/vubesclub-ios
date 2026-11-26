@@ -6,6 +6,7 @@ import Observation
 final class DemoSession {
     private(set) var isSignedIn = false
     private(set) var accountScope = UUID()
+    private(set) var applicationSubmitted = false
 
     private(set) var savedEventIDs: Set<String> = []
     private(set) var bookingIDs: Set<String> = []
@@ -20,6 +21,14 @@ final class DemoSession {
     func signIn() {
         isSignedIn = true
         accountScope = UUID()
+    }
+
+    func submitApplication() {
+        applicationSubmitted = true
+    }
+
+    func dismissApplicationConfirmation() {
+        applicationSubmitted = false
     }
 
     func signOut() {

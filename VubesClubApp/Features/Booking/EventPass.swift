@@ -19,10 +19,10 @@ struct EventPass: View {
             VStack(alignment: .leading, spacing: 7) {
                 Overline("Event pass")
 
-                Text(event.title).font(Afterglow.medium(13.3))
+                Text(L(event.title)).font(Afterglow.medium(13.3))
 
                 Text([event.date, event.program.first?.sessions.first?.time, event.meetingPoint]
-                    .compactMap { $0 }.joined(separator: " · "))
+                    .compactMap { $0 }.map { L($0) }.joined(separator: " · "))
                     .font(Afterglow.body(11, relativeTo: .caption))
                     .foregroundStyle(Afterglow.muted)
             }
@@ -35,6 +35,6 @@ struct EventPass: View {
         .background(Afterglow.surface, in: .rect(cornerRadius: 18))
         .overlay { RoundedRectangle(cornerRadius: 18).strokeBorder(Afterglow.border) }
         .accessibilityElement(children: .combine)
-        .accessibilityHint("Illustrative pass")
+        .accessibilityHint(L("Illustrative pass"))
     }
 }

@@ -25,7 +25,7 @@ struct ConfirmationScreen: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     ScreenTitle("You’re in.", size: 54)
-                    Text("Your booking is confirmed.")
+                    Text(L("Your booking is confirmed."))
                         .font(Afterglow.body(14))
                         .foregroundStyle(Afterglow.muted)
 

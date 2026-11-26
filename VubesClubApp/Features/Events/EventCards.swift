@@ -16,13 +16,13 @@ struct EventCover: View {
                 .overlay(alignment: .bottomLeading) {
                     VStack(alignment: .leading, spacing: 10) {
                         Overline(
-                            "\(confirmed ? event.date : event.sport.rawValue)  /  \(event.location)",
+                            "\(L(confirmed ? event.date : event.sport.rawValue))  /  \(L(event.location))",
                             color: Afterglow.ivory
                         )
 
-                        Text(confirmed && event.id == DemoCatalog.camp.id
+                        Text(L(confirmed && event.id == DemoCatalog.camp.id
                              ? "Likya Trail & Mobility"
-                             : event.title)
+                             : event.title))
                             .font(Afterglow.display(compactTitle ? 28 : 31))
                             .tracking(-0.55)
                             .multilineTextAlignment(.leading)
@@ -33,7 +33,7 @@ struct EventCover: View {
                 .foregroundStyle(Afterglow.text)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(event.title)
+        .accessibilityLabel(L(event.title))
         .overlay(alignment: .topLeading) {
             if confirmed {
                 Pill(title: "Confirmed", icon: "checkmark", selected: true).padding(11)
@@ -61,14 +61,14 @@ struct EventListRow: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Overline(event.sport.rawValue, color: Afterglow.accent)
 
-                    Text(event.title)
+                    Text(L(event.title))
                         .font(Afterglow.medium(16))
 
-                    Text("\(event.date) · \(event.location)")
+                    Text("\(L(event.date)) · \(L(event.location))")
                         .font(Afterglow.body(11.3, relativeTo: .caption))
                         .foregroundStyle(Afterglow.muted)
 
-                    let details = [event.level.rawValue, event.distance, event.status == .upcoming ? event.priceLabel : nil]
+                    let details = [L(event.level.rawValue), event.distance, event.status == .upcoming ? event.priceLabel : nil]
                     Text(details.compactMap { $0 }.joined(separator: " · "))
                         .font(Afterglow.medium(11, relativeTo: .caption))
                         .foregroundStyle(Afterglow.ivory)

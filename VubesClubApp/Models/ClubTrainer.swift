@@ -30,10 +30,11 @@ struct EventRating {
         return Self(total: total + rating, count: count + 1)
     }
 
+    @MainActor
     var averageLabel: String {
         guard count > 0 else { return "—" }
 
         return (Double(total) / Double(count))
-            .formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "en_US")))
+            .formatted(.number.precision(.fractionLength(1)).locale(AppLanguage.shared.locale))
     }
 }

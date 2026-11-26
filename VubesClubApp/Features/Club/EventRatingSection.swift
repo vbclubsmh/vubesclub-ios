@@ -13,12 +13,12 @@ struct RatingSummary: View {
                 .foregroundStyle(Afterglow.ivory)
                 .monospacedDigit()
 
-            Text("· \(rating.count) ratings")
+            Text(L("· %d ratings", rating.count))
                 .foregroundStyle(Afterglow.muted)
         }
         .font(Afterglow.medium(12, relativeTo: .caption))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(rating.averageLabel) out of 5, \(rating.count) ratings")
+        .accessibilityLabel(L("%@ out of 5, %d ratings", rating.averageLabel, rating.count))
     }
 }
 
@@ -34,7 +34,7 @@ struct EventRatingSection: View {
                 RatingSummary(rating: rating)
 
                 if session.canRate(event) {
-                    Text("Your rating")
+                    Text(L("Your rating"))
                         .font(Afterglow.medium(12))
                         .foregroundStyle(Afterglow.muted)
 
@@ -52,7 +52,7 @@ struct EventRatingSection: View {
                                     .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Rate \(stars) out of 5")
+                            .accessibilityLabel(L("Rate %d out of 5", stars))
                             .accessibilityAddTraits(stars == selected ? .isSelected : [])
                         }
                     }

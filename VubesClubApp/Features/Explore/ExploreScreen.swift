@@ -21,14 +21,14 @@ struct ExploreScreen: View {
         Map(position: $camera, interactionModes: [.pan, .zoom]) {
             ForEach(events) { event in
                 if let coordinate = event.meetingCoordinate {
-                    Annotation(event.title, coordinate: coordinate, anchor: .bottom) {
+                    Annotation(L(event.title), coordinate: coordinate, anchor: .bottom) {
                         Button {
                             if selectedID == event.id { focus(event) } else { select(event.id) }
                         } label: {
                             MapPin(symbol: event.sport.symbol, selected: selectedEventID == event.id)
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(event.title)
+                        .accessibilityLabel(L(event.title))
                         .accessibilityAddTraits(selectedEventID == event.id ? .isSelected : [])
                     }
                 }
@@ -63,7 +63,7 @@ struct ExploreScreen: View {
                 if !events.isEmpty {
                     eventCarousel(events, selectedEventID: selectedEventID)
                 } else {
-                    Text("No matching events in Istanbul")
+                    Text(L("No matching events in Istanbul"))
                         .font(Afterglow.body(13))
                         .frame(maxWidth: .infinity, minHeight: 54)
                 }
@@ -153,7 +153,7 @@ struct ExploreScreen: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("Show \(event.title)")
+                        .accessibilityLabel(L("Show %@", L(event.title)))
                         .accessibilityAddTraits(isSelected ? .isSelected : [])
                     }
                 }
@@ -168,26 +168,26 @@ struct ExploreScreen: View {
                     .frame(width: 103, height: 138)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Label(event.sport.rawValue, systemImage: event.sport.symbol)
+                    Label(L(event.sport.rawValue), systemImage: event.sport.symbol)
                         .font(Afterglow.medium(10, relativeTo: .caption))
                         .foregroundStyle(Afterglow.accent)
 
-                    Overline("\(event.date) / \(event.location)")
+                    Overline("\(L(event.date)) / \(L(event.location))")
 
-                    Text(event.title)
+                    Text(L(event.title))
                         .font(Afterglow.display(21, relativeTo: .title2))
                         .tracking(-0.4)
                         .fixedSize(horizontal: false, vertical: true)
 
                     MetadataLabel(
-                        title: [event.level.rawValue, event.distance].compactMap { $0 }.joined(separator: " · "),
+                        title: [L(event.level.rawValue), event.distance].compactMap { $0 }.joined(separator: " · "),
                         icon: "mountain.2"
                     )
 
                     Hairline().padding(.top, 3)
 
                     HStack {
-                        Text("View event").font(Afterglow.medium(12))
+                        Text(L("View event")).font(Afterglow.medium(12))
                         Spacer()
                         Image(systemName: "arrow.up.right").font(.system(size: 13))
                     }

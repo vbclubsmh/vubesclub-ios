@@ -47,7 +47,7 @@ struct FeaturedEvents: View {
                             .font(Afterglow.medium(11, relativeTo: .caption))
                             .monospacedDigit()
                             .foregroundStyle(Afterglow.muted)
-                            .accessibilityLabel("Featured event \(index + 1) of \(events.count)")
+                            .accessibilityLabel(L("Featured event %d of %d", index + 1, events.count))
                     }
                 }
             }
@@ -77,7 +77,7 @@ struct FeaturedEvents: View {
                 .padding(13)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("View \(event.title)")
+            .accessibilityLabel(L("View %@", L(event.title)))
         }
         .background(Afterglow.surface, in: .rect(cornerRadius: 16))
         .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(Afterglow.border.opacity(0.8)) }

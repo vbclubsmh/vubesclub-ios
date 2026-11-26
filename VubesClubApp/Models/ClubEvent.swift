@@ -20,6 +20,26 @@ enum Sport: String, CaseIterable {
     }
 }
 
+enum EventCategory: CaseIterable {
+    case all, sports, camp
+
+    var title: String {
+        switch self {
+        case .all: "All"
+        case .sports: "Sports"
+        case .camp: "Camp"
+        }
+    }
+
+    func matches(_ event: ClubEvent) -> Bool {
+        switch self {
+        case .all: true
+        case .sports: !event.isCamp
+        case .camp: event.isCamp
+        }
+    }
+}
+
 enum EventLevel: String, CaseIterable {
     case easy = "Easy"
     case moderate = "Moderate"
@@ -64,6 +84,7 @@ struct ClubEvent: Identifiable {
 
     var trainerID = "deniz"
     var accommodation: String?
+    var isCamp = false
     var meetingCoordinate: CLLocationCoordinate2D?
     var distance: String?
     var meetingPoint = "Kaş Marina"
@@ -71,8 +92,9 @@ struct ClubEvent: Identifiable {
 
     var rating: EventRating?
 
+    @MainActor
     var priceLabel: String {
-        "₺" + price.formatted(.number.locale(Locale(identifier: "en_US")))
+        "₺" + price.formatted(.number.locale(AppLanguage.shared.locale))
     }
 }
 

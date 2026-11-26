@@ -10,7 +10,7 @@ struct PrimaryAction: View {
     var body: some View {
         Button(action: action) {
             ZStack(alignment: .trailing) {
-                Text(title)
+                Text(L(title))
                     .font(Afterglow.medium(14))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 44)
@@ -44,7 +44,7 @@ struct RoundControl: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(title)
+        .accessibilityLabel(L(title))
     }
 }
 
@@ -68,7 +68,7 @@ struct Pill: View {
                     .font(.system(size: 11))
             }
 
-            Text(title)
+            Text(L(title))
                 .font(Afterglow.medium(11, relativeTo: .caption))
         }
         .padding(.horizontal, 12)
@@ -89,7 +89,7 @@ struct MetadataLabel: View {
     let icon: String
 
     var body: some View {
-        Label(title, systemImage: icon)
+        Label(L(title), systemImage: icon)
             .font(Afterglow.medium(11.3, relativeTo: .caption))
             .foregroundStyle(Afterglow.muted)
     }
