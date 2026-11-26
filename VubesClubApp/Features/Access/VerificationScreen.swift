@@ -46,7 +46,8 @@ struct VerificationScreen: View {
     @State private var code = ""
     @State private var failedAttempts = 0
 
-    private var codeLength: Int { challenge.codeLength }
+    /// Sunucu 4 ya da 6 gönderir; beklenmedik bir değer arayüzü bozmasın.
+    private var codeLength: Int { min(max(challenge.codeLength, 4), 8) }
 
     var body: some View {
         AccessLayout(title: "Enter your code",

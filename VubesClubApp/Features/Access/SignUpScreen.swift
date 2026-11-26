@@ -12,6 +12,7 @@ struct SignUpScreen: View {
     @State private var fullName = ""
     @State private var email = ""
     @State private var phone = ""
+    @State private var birthDate: Date?
     @State private var university = ""
     @State private var jobTitle = ""
     @State private var heightCm = ""
@@ -35,7 +36,7 @@ struct SignUpScreen: View {
     private var canContinue: Bool {
         switch step {
         case 1:
-            !fullName.trimmed.isEmpty && email.contains("@") && phone.count == 10
+            !fullName.trimmed.isEmpty && email.contains("@") && phone.count == 10 && birthDate != nil
         case 2:
             !university.trimmed.isEmpty && !jobTitle.trimmed.isEmpty
                 && (100...250).contains(Int(heightCm) ?? 0) && (30...300).contains(Int(weightKg) ?? 0)
@@ -113,6 +114,7 @@ struct SignUpScreen: View {
             phone: ClubSession.phone(phone), fullName: fullName.trimmed, email: email.trimmed,
             university: university.trimmed, jobTitle: jobTitle.trimmed,
             heightCm: Int(heightCm) ?? 0, weightKg: Int(weightKg) ?? 0,
+            birthDate: BirthDate.iso(birthDate ?? BirthDate.latest),
             workplace: nil, instagram: optional(instagram), linkedIn: optional(linkedIn),
             invitationCode: optional(invitationCode), adultDeclared: adultDeclared)
 
@@ -173,6 +175,7 @@ struct SignUpScreen: View {
         switch step {
         case 1:
             field("Full name", placeholder: "Your name", text: $fullName, contentType: .name, focus: .name)
+            BirthDateField(label: "Birth date", date: $birthDate)
             field("Email", placeholder: "you@example.com", text: $email, contentType: .emailAddress,
                   keyboard: .emailAddress, capitalization: .never, disableCorrection: true)
             VStack(alignment: .leading, spacing: 6) {

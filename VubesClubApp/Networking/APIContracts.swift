@@ -35,6 +35,8 @@ struct ApplicationCodeRequest: Encodable {
     let jobTitle: String
     let heightCm: Int
     let weightKg: Int
+    /// ISO tarih: yyyy-MM-dd
+    let birthDate: String
     let workplace: String?
     let instagram: String?
     let linkedIn: String?
@@ -65,7 +67,28 @@ struct MemberProfile: Decodable {
     let avatar: MediaReference?
     let cover: MediaReference?
     let phoneMasked: String
+    let phone: String?
+    let email: String?
+    let heightCm: Int?
+    let weightKg: Int?
+    let clothingSize: String?
+    /// ISO tarih: yyyy-MM-dd
+    let birthDate: String?
     let membershipState: String
     let tier: String
     let trainerRole: Bool
+}
+
+/// Boş bırakılan alan değişmez; doğum tarihi yalnızca bir kez girilebilir.
+struct ProfileUpdate: Encodable {
+    var heightCm: Int?
+    var weightKg: Int?
+    var clothingSize: String?
+    var birthDate: String?
+}
+
+/// Tam olarak biri dolu olmalı.
+struct ContactChangeBody: Encodable {
+    var email: String?
+    var phone: String?
 }

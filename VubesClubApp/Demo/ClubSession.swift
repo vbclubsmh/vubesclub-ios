@@ -132,6 +132,26 @@ final class ClubSession {
         profile = try await api.upload("PUT", "me/avatar", data: jpeg, contentType: "image/jpeg", as: MemberProfile.self)
     }
 
+    /// Boy, kilo, beden ve (bir kez) doğum tarihi.
+    func updateProfile(_ update: ProfileUpdate) async throws {
+        profile = try await api.send("PATCH", "me", body: update, as: MemberProfile.self)
+    }
+
+    /// E-posta ya da telefon değişikliği için kod ister; kod yeni e-postaya ya da mevcut e-postaya gider.
+    func requestContactChange(_ change: ContactChangeBody) async throws -> SMSChallenge {
+        try await api.send("POST", "me/contact-changes", body: change, as: SMSChallenge.self)
+    }
+
+    func resendContactChange(_ challenge: SMSChallenge) async throws -> SMSChallenge {
+        try await api.fetch("POST", "me/contact-changes/\(challenge.challengeId.uuidString.lowercased())/resend", as: SMSChallenge.self)
+    }
+
+    func confirmContactChange(_ challenge: SMSChallenge, code: String) async throws {
+        profile = try await api.send(
+            "POST", "me/contact-changes/\(challenge.challengeId.uuidString.lowercased())/verify",
+            body: CodeVerification(code: code), as: MemberProfile.self)
+    }
+
     func removeAvatar() async throws {
         profile = try await api.fetch("DELETE", "me/avatar", as: MemberProfile.self)
     }

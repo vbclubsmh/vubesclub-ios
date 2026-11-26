@@ -16,6 +16,23 @@ enum ClubAPIError: LocalizedError {
 
     /// A message for the user: the server's own text for API errors, a fixed key for transport failures.
     static func message(for error: Error) -> String {
+        // Bilinen sunucu kodları, seçili dile çevrilen sabit anahtarlara eşlenir; bilinmeyenler sunucunun metnini gösterir.
+        if let failure = error as? ClubAPIError, case let .server(status, code, _) = failure {
+            switch code {
+            case "OTP_INVALID": return "That code isn’t right. Check it and try again."
+            case "OTP_EXPIRED": return "That code has expired. Request a new one."
+            case "OTP_LIMIT": return "Too many attempts. Please wait a few minutes and try again."
+            case "EMAIL_UNAVAILABLE", "SMS_UNAVAILABLE": return "We couldn’t send your code right now. Try again in a moment."
+            case "MEMBER_EXISTS": return "A membership with this phone number or email already exists."
+            case "EMAIL_TAKEN": return "That email address is already used by another membership."
+            case "PHONE_TAKEN": return "That phone number is already used by another membership."
+            case "DEMO_ACCOUNT": return "The demo account’s contact details can’t be changed."
+            case "BIRTH_DATE_LOCKED": return "Your birth date can’t be changed. Contact support to correct it."
+            case "AVATAR_TOO_LARGE": return "That photo is too large. Choose a smaller one."
+            default: break
+            }
+            if status >= 500 { return "Something went wrong on our side. Try again in a moment." }
+        }
         if let failure = error as? ClubAPIError, case .server = failure { return failure.errorDescription ?? "" }
         if let failure = error as? ClubAPIError { return failure.errorDescription ?? "Something went wrong." }
         if let failure = error as? URLError {

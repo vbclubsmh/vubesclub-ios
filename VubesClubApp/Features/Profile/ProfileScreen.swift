@@ -17,6 +17,12 @@ struct ProfileScreen: View {
     @State private var pickedItem: PhotosPickerItem?
     @State private var isUpdatingPhoto = false
     @State private var photoError: String?
+    @State private var cropRequest: CropRequest?
+
+    private struct CropRequest: Identifiable {
+        let id = UUID()
+        let image: UIImage
+    }
 
     private var memberName: String { session.profile?.fullName ?? "" }
 
@@ -78,24 +84,37 @@ struct ProfileScreen: View {
         .photosPicker(isPresented: $showPicker, selection: $pickedItem, matching: .images)
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
-            Task { await upload(item) }
+            Task { await prepareCrop(item) }
+        }
+        .fullScreenCover(item: $cropRequest) { request in
+            AvatarCropScreen(image: request.image) {
+                cropRequest = nil
+            } onDone: { cropped in
+                cropRequest = nil
+                Task { await upload(cropped) }
+            }
         }
         .sheet(item: $selectedPanel) { panel in
-            VStack(alignment: .leading, spacing: 16) {
-                ScreenTitle(panel.rawValue, size: 32)
+            switch panel {
+            case .account:
+                AccountSettingsScreen()
+                    .screenMotion(.sheet)
+                    .presentationDetents([.large])
+            case .privacy:
+                VStack(alignment: .leading, spacing: 16) {
+                    ScreenTitle(panel.rawValue, size: 32)
 
-                Text(panel == .account
-                     ? "\(memberName) · \(L("Club member"))"
-                     : L("Your profile is private. Activity maps use sample locations."))
-                    .font(Afterglow.body(14))
-                    .foregroundStyle(Afterglow.muted)
+                    Text(L("Your profile is private. Activity maps use sample locations."))
+                        .font(Afterglow.body(14))
+                        .foregroundStyle(Afterglow.muted)
 
-                PrimaryAction(title: "Done", icon: "checkmark") { selectedPanel = nil }
+                    PrimaryAction(title: "Done", icon: "checkmark") { selectedPanel = nil }
+                }
+                .padding(24)
+                .screenMotion(.sheet)
+                .presentationDetents([.medium])
+                .presentationBackground(Afterglow.background)
             }
-            .padding(24)
-            .screenMotion(.sheet)
-            .presentationDetents([.medium])
-            .presentationBackground(Afterglow.background)
         }
     }
 
@@ -117,16 +136,29 @@ struct ProfileScreen: View {
         .accessibilityLabel(L("Change photo"))
     }
 
-    private func upload(_ item: PhotosPickerItem) async {
-        isUpdatingPhoto = true
+    /// Seçilen fotoğrafı yükler ve WhatsApp tarzı önizleme/kırpma ekranını açar.
+    private func prepareCrop(_ item: PhotosPickerItem) async {
         photoError = nil
-        defer {
-            isUpdatingPhoto = false
-            pickedItem = nil
-        }
+        defer { pickedItem = nil }
         do {
             guard let data = try await item.loadTransferable(type: Data.self),
-                  let jpeg = ProfilePhoto.jpeg(from: data) else {
+                  let image = PhotoLoader.downsampled(from: data) else {
+                photoError = L("We couldn’t use that photo. Try another one.")
+                return
+            }
+            cropRequest = CropRequest(image: image)
+        } catch {
+            photoError = L("We couldn’t use that photo. Try another one.")
+        }
+    }
+
+    /// Kırpılmış kare fotoğrafı sunucuya yükler.
+    private func upload(_ cropped: UIImage) async {
+        isUpdatingPhoto = true
+        photoError = nil
+        defer { isUpdatingPhoto = false }
+        do {
+            guard let jpeg = cropped.jpegData(compressionQuality: 0.85) else {
                 photoError = L("We couldn’t use that photo. Try another one.")
                 return
             }

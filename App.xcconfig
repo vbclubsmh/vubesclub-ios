@@ -2,7 +2,11 @@ PRODUCT_NAME = VubesClubApp
 PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.mobile
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1
-SWIFT_VERSION = 6.0
+// Swift 6 dil modu, SwiftUI'nin yeni iOS sürümlerinde arka planda çizdiği App.body kapanışlarında
+// çalışma zamanı aktör denetimi (_dispatch_assert_queue_fail) ekler ve uygulamayı aralıklı olarak çökertir.
+// Swift 5 modu bu çalışma zamanı denetimini kaldırır; derleme zamanı eşzamanlılık uyarıları açık kalır.
+SWIFT_VERSION = 5.0
+SWIFT_STRICT_CONCURRENCY = complete
 TARGETED_DEVICE_FAMILY = 1
 SUPPORTED_PLATFORMS = iphoneos iphonesimulator
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
