@@ -2,6 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>VubesAPIBaseURL</key>
+    <string>$(VUBES_API_BASE_URL)</string>
+    <key>VubesOTPHint</key>
+    <string>$(VUBES_OTP_HINT)</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Vubes Club connects to the API server on your local network during development.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Vubes Club uses your location when you choose to share it with participants on the active event map.</string>
     <key>UILaunchScreen</key>

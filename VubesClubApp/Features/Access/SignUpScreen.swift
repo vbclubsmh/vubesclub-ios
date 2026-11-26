@@ -2,10 +2,13 @@ import SwiftUI
 import UIKit
 
 struct SignUpScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var step = 1
+    @State private var destination: VerificationRequest?
+    @State private var errorMessage: String?
+    @State private var isSubmitting = false
     @State private var fullName = ""
     @State private var email = ""
     @State private var phone = ""
@@ -60,13 +63,24 @@ struct SignUpScreen: View {
             }
             .animation(.easeInOut(duration: reduceMotion ? 0.12 : 0.28), value: step)
         } action: {
-            VStack(spacing: 0) {
-                PrimaryAction(title: step == steps.count ? "Submit application" : "Continue") {
-                    if step == steps.count { session.submitApplication() } else { step += 1 }
+            VStack(spacing: 10) {
+                if let errorMessage {
+                    Text(L(errorMessage))
+                        .font(Afterglow.body(12))
+                        .foregroundStyle(Afterglow.accent)
+                        .multilineTextAlignment(.center)
+                        .accessibilityLabel(L("Application error: %@", L(errorMessage)))
                 }
-                .disabled(!canContinue)
 
+                PrimaryAction(title: step == steps.count ? "Submit application" : "Continue") {
+                    if step == steps.count { Task { await submit() } } else { step += 1 }
+                }
+                .disabled(!canContinue || isSubmitting)
             }
+        }
+        .navigationDestination(item: $destination) { request in
+            VerificationScreen(request: request)
+                .toolbar(.hidden, for: .navigationBar)
         }
         .onChange(of: phone) { _, value in
             let clean = Self.turkishMobile(value)
@@ -86,6 +100,28 @@ struct SignUpScreen: View {
         }
         .sensoryFeedback(ClubHaptics.selection, trigger: step)
         .sensoryFeedback(.selection, trigger: adultDeclared)
+    }
+
+    private func submit() async {
+        errorMessage = nil
+        isSubmitting = true
+        defer { isSubmitting = false }
+
+        func optional(_ value: String) -> String? { value.trimmed.isEmpty ? nil : value.trimmed }
+
+        let request = ApplicationCodeRequest(
+            phone: ClubSession.phone(phone), fullName: fullName.trimmed, email: email.trimmed,
+            university: university.trimmed, jobTitle: jobTitle.trimmed,
+            heightCm: Int(heightCm) ?? 0, weightKg: Int(weightKg) ?? 0,
+            workplace: nil, instagram: optional(instagram), linkedIn: optional(linkedIn),
+            invitationCode: optional(invitationCode), adultDeclared: adultDeclared)
+
+        do {
+            let challenge = try await session.requestApplicationCode(request)
+            destination = VerificationRequest(challenge: challenge, digits: phone, kind: .application)
+        } catch {
+            errorMessage = ClubAPIError.message(for: error)
+        }
     }
 
     /// Keeps only digits, drops a leading 0 and limits to the 10 digits of a Turkish mobile number.

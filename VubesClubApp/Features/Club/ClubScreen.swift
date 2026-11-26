@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ClubScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     @State private var selectedTrainerID: ClubTrainer.ID? = DemoClub.deniz.id
     @State private var showingFollowing = false

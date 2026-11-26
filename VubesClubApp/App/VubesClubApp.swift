@@ -4,7 +4,7 @@ import SwiftUI
 struct VubesClubApp: App {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var session = DemoSession()
+    @State private var session = ClubSession()
     @State private var startupPhase = StartupPhase.splash
 
     var body: some Scene {
@@ -33,6 +33,7 @@ struct VubesClubApp: App {
                 }
             }
             .environment(session)
+            .task { await session.restore() }
             .preferredColorScheme(.dark)
             .tint(Afterglow.ivory)
         }

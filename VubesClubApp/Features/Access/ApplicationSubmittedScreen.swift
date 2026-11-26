@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ApplicationSubmittedScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
     @State private var appeared = false
 
     var body: some View {

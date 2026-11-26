@@ -1,17 +1,39 @@
 import SwiftUI
 
+enum VerificationKind: Hashable { case signIn, application }
+
+struct VerificationRequest: Hashable, Identifiable {
+    let challenge: SMSChallenge
+    let digits: String
+    let kind: VerificationKind
+
+    var id: UUID { challenge.challengeId }
+}
+
 struct VerificationScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isFocused: Bool
 
     private enum Operation: Equatable { case verify, resend }
-    @State private var challenge: DemoOTPChallenge
+    @State private var challenge: SMSChallenge
     @State private var operation: Operation?
     @State private var errorMessage: String?
 
-    init(challenge: DemoOTPChallenge) {
-        _challenge = State(initialValue: challenge)
+    private let request: VerificationRequest
+
+    init(request: VerificationRequest) {
+        self.request = request
+        _challenge = State(initialValue: request.challenge)
+    }
+
+    private var showsTestCodeHint: Bool {
+        (Bundle.main.object(forInfoDictionaryKey: "VubesOTPHint") as? String) == "YES"
+    }
+
+    private var subtitle: String {
+        let sent = L("We sent a %d-digit code to +90 %@.", codeLength, request.digits)
+        return showsTestCodeHint ? sent + " " + L("Test build: use code 1111.") : sent
     }
 
     @State private var code = ""
@@ -21,7 +43,7 @@ struct VerificationScreen: View {
 
     var body: some View {
         AccessLayout(title: "Enter your code",
-                     subtitle: "For this demo, use verification code 1111.") {
+                     subtitle: subtitle) {
             VStack(alignment: .leading, spacing: 12) {
                 Overline("Verification code")
 
@@ -57,18 +79,26 @@ struct VerificationScreen: View {
             defer { self.operation = nil }
             errorMessage = nil
 
-            switch operation {
-            case .verify:
-                guard code == "1111" else {
-                    errorMessage = "For this demo, enter 1111."
-                    failedAttempts += 1
-                    return
+            do {
+                switch operation {
+                case .verify:
+                    switch try await session.verify(challenge, code: code) {
+                    case .signedIn, .applicationReceived:
+                        break
+                    case .unknownNumber:
+                        errorMessage = "No membership found for this number. Apply with Sign up."
+                        failedAttempts += 1
+                    case .underReview:
+                        errorMessage = "Your membership is still under review. We’ll share the decision soon."
+                    }
+                case .resend:
+                    challenge = try await session.resendCode(challenge)
+                    code = ""
+                    isFocused = true
                 }
-                session.signIn()
-            case .resend:
-                challenge = DemoOTPChallenge()
-                code = ""
-                isFocused = true
+            } catch {
+                errorMessage = ClubAPIError.message(for: error)
+                failedAttempts += 1
             }
         }
         .onChange(of: code) { _, value in

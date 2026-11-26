@@ -23,7 +23,7 @@ struct RatingSummary: View {
 }
 
 struct EventRatingSection: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     let event: ClubEvent
 

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EventDetailsScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     @ScaledMetric(relativeTo: .largeTitle) private var heroHeight = 283.0
 

@@ -26,7 +26,7 @@ enum ClubRoute: Hashable {
 }
 
 struct ClubTabs: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     @State private var selection: ClubTab = .events
     @State private var paths: [ClubTab: [ClubRoute]] = [:]

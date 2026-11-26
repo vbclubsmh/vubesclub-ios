@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CheckoutScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     let event: ClubEvent
     let onConfirmation: () -> Void

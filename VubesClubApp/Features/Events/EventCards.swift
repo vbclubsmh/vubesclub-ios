@@ -48,7 +48,7 @@ struct EventCover: View {
 }
 
 struct EventListRow: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     let event: ClubEvent
 

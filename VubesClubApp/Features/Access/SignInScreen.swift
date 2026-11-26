@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct SignInScreen: View {
+    @Environment(ClubSession.self) private var session
+
     @State private var phone = ""
-    @State private var destination: DemoOTPChallenge?
+    @State private var destination: VerificationRequest?
     @State private var errorMessage: String?
+    @State private var isSending = false
     @FocusState private var phoneFocused: Bool
 
     private var canContinue: Bool {
@@ -46,10 +49,9 @@ struct SignInScreen: View {
                 }
 
                 PrimaryAction(title: "Continue") {
-                    errorMessage = nil
-                    destination = DemoOTPChallenge()
+                    Task { await sendCode() }
                 }
-                .disabled(!canContinue)
+                .disabled(!canContinue || isSending)
             }
         }
         .onChange(of: phone) { _, value in
@@ -66,9 +68,22 @@ struct SignInScreen: View {
         .sensoryFeedback(ClubHaptics.selection, trigger: phone.count) { previous, current in
             current > previous
         }
-        .navigationDestination(item: $destination) { challenge in
-            VerificationScreen(challenge: challenge)
+        .navigationDestination(item: $destination) { request in
+            VerificationScreen(request: request)
                 .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    private func sendCode() async {
+        errorMessage = nil
+        isSending = true
+        defer { isSending = false }
+
+        do {
+            let challenge = try await session.requestLoginCode(digits: phone)
+            destination = VerificationRequest(challenge: challenge, digits: phone, kind: .signIn)
+        } catch {
+            errorMessage = ClubAPIError.message(for: error)
         }
     }
 

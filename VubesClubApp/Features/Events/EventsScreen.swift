@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EventsScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     @Binding var filter: EventFilter
 

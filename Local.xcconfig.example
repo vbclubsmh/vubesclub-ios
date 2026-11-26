@@ -1,0 +1,4 @@
+// Copy to Local.xcconfig (ignored by git) and point Debug builds at the Mac running the API.
+// A physical iPhone needs the Mac's LAN address, e.g. `ipconfig getifaddr en0`.
+// "/$()/" keeps xcconfig from reading the slashes as a comment.
+VUBES_API_BASE_URL[config=Debug] = http:/$()/192.168.1.4:5080

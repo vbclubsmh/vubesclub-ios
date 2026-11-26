@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProfileScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     private enum Panel: String, Identifiable {
         case account = "Account settings"

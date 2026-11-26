@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MyEventsScreen: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     @State private var showingPast = false
     @State private var selectedPass: ClubEvent?

@@ -96,7 +96,7 @@ struct MetadataLabel: View {
 }
 
 struct SaveControl: View {
-    @Environment(DemoSession.self) private var session
+    @Environment(ClubSession.self) private var session
 
     let eventID: String
 
