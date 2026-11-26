@@ -32,8 +32,15 @@ struct VerificationScreen: View {
     }
 
     private var subtitle: String {
-        let sent = L("We sent a %d-digit code to +90 %@.", codeLength, request.digits)
-        return showsTestCodeHint ? sent + " " + L("Test build: use code 1111.") : sent
+        switch challenge.channel {
+        case "email":
+            return L("We sent a %d-digit code to the email address on your membership. It stays valid for 15 minutes. Check your spam folder too.", codeLength)
+        case "test":
+            let sent = L("We sent a %d-digit code to +90 %@.", codeLength, request.digits)
+            return showsTestCodeHint ? sent + " " + L("Test build: use code 1111.") : sent
+        default:
+            return L("We sent a %d-digit code to +90 %@.", codeLength, request.digits)
+        }
     }
 
     @State private var code = ""

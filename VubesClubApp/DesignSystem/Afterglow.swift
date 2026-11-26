@@ -95,9 +95,21 @@ struct ClubMediaImage: View {
 
     var body: some View {
         Group {
-            Image(source)
-                .resizable()
-                .aspectRatio(contentMode: fit ? .fit : .fill)
+            if source.hasPrefix("/"), let reference = URL(string: source),
+               let url = ClubAPI.shared.resourceURL(reference) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image.resizable().aspectRatio(contentMode: fit ? .fit : .fill)
+                    default:
+                        Afterglow.surface
+                    }
+                }
+            } else {
+                Image(source)
+                    .resizable()
+                    .aspectRatio(contentMode: fit ? .fit : .fill)
+            }
         }
     }
 }

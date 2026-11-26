@@ -128,6 +128,18 @@ final class ClubAPI {
         try decode(type, from: await call(method, path: path, body: encode(body), headers: headers))
     }
 
+    /// Sends raw bytes (for example a JPEG) and decodes the JSON reply.
+    func upload<T: Decodable>(
+        _ method: String, _ path: String, data: Data, contentType: String, as type: T.Type
+    ) async throws -> T {
+        try decode(type, from: await call(method, path: path, body: data, headers: ["Content-Type": contentType]))
+    }
+
+    /// A request without a body whose JSON reply is decoded.
+    func fetch<T: Decodable>(_ method: String, _ path: String, as type: T.Type) async throws -> T {
+        try decode(type, from: await call(method, path: path))
+    }
+
     func empty(_ method: String, _ path: String) async throws {
         _ = try await call(method, path: path)
     }

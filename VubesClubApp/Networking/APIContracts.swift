@@ -20,6 +20,7 @@ struct SMSChallenge: Decodable, Hashable {
     let codeLength: Int
     let expiresAt: Date
     let resendAt: Date
+    let channel: String?
 }
 
 struct LoginCodeRequest: Encodable {

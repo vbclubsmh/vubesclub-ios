@@ -12,7 +12,7 @@ INFOPLIST_KEY_CFBundleDisplayName = Vubes Club
 ALWAYS_SEARCH_USER_PATHS = NO
 
 // API origin. Debug targets a developer Mac (override in Local.xcconfig); Release targets production.
-VUBES_API_BASE_URL[config=Debug] = http:/$()/localhost:5080
+VUBES_API_BASE_URL[config=Debug] = https:/$()/api.vubesclub.com
 VUBES_API_BASE_URL[config=Release] = https:/$()/api.vubesclub.com
 // Shows the fixed test code on the verification screen while the server accepts it (Identity:AllowFixedOtp).
 VUBES_OTP_HINT = YES

@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 struct ProfileScreen: View {
@@ -11,6 +12,13 @@ struct ProfileScreen: View {
     }
 
     @State private var selectedPanel: Panel?
+    @State private var showPhotoMenu = false
+    @State private var showPicker = false
+    @State private var pickedItem: PhotosPickerItem?
+    @State private var isUpdatingPhoto = false
+    @State private var photoError: String?
+
+    private var memberName: String { session.profile?.fullName ?? "" }
 
     var body: some View {
         ScrollView {
@@ -27,18 +35,23 @@ struct ProfileScreen: View {
                         Wordmark(width: 46).padding(16)
                     }
                     .overlay(alignment: .bottomLeading) {
-                        Avatar(image: "Portrait3", size: 65, selected: true)
-                            .offset(x: 17, y: 18)
+                        photoButton.offset(x: 17, y: 26)
                     }
 
                 VStack(alignment: .leading, spacing: 5) {
-                    ScreenTitle("Ada Kaya", size: 36)
+                    ScreenTitle(memberName, size: 36)
 
-                    Text(L("Club member"))
+                    Text(isUpdatingPhoto ? L("Updating photo…") : L("Club member"))
                         .font(Afterglow.body(13))
                         .foregroundStyle(Afterglow.muted)
+
+                    if let photoError {
+                        Text(photoError)
+                            .font(Afterglow.body(12))
+                            .foregroundStyle(Afterglow.muted)
+                    }
                 }
-                .padding(.top, 15)
+                .padding(.top, 22)
 
                 VStack(spacing: 0) {
                     Hairline()
@@ -55,13 +68,25 @@ struct ProfileScreen: View {
         }
         .scrollIndicators(.hidden)
         .background(Afterglow.background.ignoresSafeArea())
+        .task { await session.refreshProfile() }
+        .confirmationDialog(L("Profile photo"), isPresented: $showPhotoMenu) {
+            Button(L("Choose from library")) { showPicker = true }
+            if session.profile?.avatar != nil {
+                Button(L("Remove photo"), role: .destructive) { removePhoto() }
+            }
+        }
+        .photosPicker(isPresented: $showPicker, selection: $pickedItem, matching: .images)
+        .onChange(of: pickedItem) { _, item in
+            guard let item else { return }
+            Task { await upload(item) }
+        }
         .sheet(item: $selectedPanel) { panel in
             VStack(alignment: .leading, spacing: 16) {
                 ScreenTitle(panel.rawValue, size: 32)
 
-                Text(L(panel == .account
-                     ? "Ada Kaya · Club member"
-                     : "Your profile is private. Activity maps use sample locations."))
+                Text(panel == .account
+                     ? "\(memberName) · \(L("Club member"))"
+                     : L("Your profile is private. Activity maps use sample locations."))
                     .font(Afterglow.body(14))
                     .foregroundStyle(Afterglow.muted)
 
@@ -71,6 +96,52 @@ struct ProfileScreen: View {
             .screenMotion(.sheet)
             .presentationDetents([.medium])
             .presentationBackground(Afterglow.background)
+        }
+    }
+
+    private var photoButton: some View {
+        Button { showPhotoMenu = true } label: {
+            ProfileAvatar(url: session.profile?.avatar?.url, name: memberName, size: 72)
+                .overlay(alignment: .bottomTrailing) {
+                    Image(systemName: isUpdatingPhoto ? "hourglass" : "camera.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Afterglow.background)
+                        .frame(width: 24, height: 24)
+                        .background(Afterglow.ivory, in: Circle())
+                        .overlay { Circle().strokeBorder(Afterglow.background, lineWidth: 2) }
+                        .offset(x: 3, y: 3)
+                }
+        }
+        .buttonStyle(.plain)
+        .disabled(isUpdatingPhoto)
+        .accessibilityLabel(L("Change photo"))
+    }
+
+    private func upload(_ item: PhotosPickerItem) async {
+        isUpdatingPhoto = true
+        photoError = nil
+        defer {
+            isUpdatingPhoto = false
+            pickedItem = nil
+        }
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self),
+                  let jpeg = ProfilePhoto.jpeg(from: data) else {
+                photoError = L("We couldn’t use that photo. Try another one.")
+                return
+            }
+            try await session.updateAvatar(jpeg)
+        } catch {
+            photoError = L(ClubAPIError.message(for: error))
+        }
+    }
+
+    private func removePhoto() {
+        Task {
+            isUpdatingPhoto = true
+            photoError = nil
+            defer { isUpdatingPhoto = false }
+            do { try await session.removeAvatar() } catch { photoError = L(ClubAPIError.message(for: error)) }
         }
     }
 

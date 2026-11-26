@@ -122,6 +122,20 @@ final class ClubSession {
         profile = try? await api.get("me", as: MemberProfile.self)
     }
 
+    func refreshProfile() async {
+        guard isSignedIn else { return }
+        await loadProfile()
+    }
+
+    /// Uploads a new profile photo (JPEG bytes) and keeps the returned profile.
+    func updateAvatar(_ jpeg: Data) async throws {
+        profile = try await api.upload("PUT", "me/avatar", data: jpeg, contentType: "image/jpeg", as: MemberProfile.self)
+    }
+
+    func removeAvatar() async throws {
+        profile = try await api.fetch("DELETE", "me/avatar", as: MemberProfile.self)
+    }
+
     /// `5551234567` → `+905551234567`.
     static func phone(_ digits: String) -> String { "+90" + digits }
 
