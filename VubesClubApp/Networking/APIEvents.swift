@@ -39,6 +39,7 @@ struct APIEventCard: Decodable {
     let position: APIPoint?
     let isSaved: Bool
     let rating: APIRatingSummary?
+    let featured: Bool?
 }
 
 struct APIEventPage: Decodable {

@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct EventsScreen: View {
+    // Hasdal is a promoted catalog event. Its real API ID survives title and content edits.
+    private static let hasdalEventID = "18f18e03-476b-443f-a179-6f078f2a69f8"
+
     @Environment(ClubSession.self) private var session
     @Environment(EventCatalog.self) private var catalog
 
@@ -13,9 +16,14 @@ struct EventsScreen: View {
     @State private var category = EventCategory.all
 
     private var visibleEvents: [ClubEvent] {
-        catalog.upcoming.filter {
+        var events = catalog.upcoming.filter {
             filter.matches($0) && category.matches($0) && (!savedOnly || session.savedEventIDs.contains($0.id))
         }
+        if let index = events.firstIndex(where: { $0.id == Self.hasdalEventID }), index > 0 {
+            let promoted = events.remove(at: index)
+            events.insert(promoted, at: 0)
+        }
+        return events
     }
 
     var body: some View {

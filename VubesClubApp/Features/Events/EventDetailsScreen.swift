@@ -10,11 +10,21 @@ struct EventDetailsScreen: View {
 
     @State private var showsPreparation = false
     @State private var photoIndex = 0
+    @State private var viewerIndex: Int?
+
+    private var photos: [String] {
+        var seen = Set<String>()
+        return ([event.image] + event.gallery).filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 hero
+
+                if photos.count > 1 {
+                    thumbnails
+                }
 
                 VStack(alignment: .leading, spacing: 19) {
                     eventFacts
@@ -57,6 +67,9 @@ struct EventDetailsScreen: View {
         .scrollIndicators(.hidden)
         .ignoresSafeArea(.container, edges: .top)
         .background(Afterglow.background.ignoresSafeArea())
+        .fullScreenCover(item: Binding(get: { viewerIndex.map(PhotoSelection.init) }, set: { viewerIndex = $0?.index })) { selection in
+            PhotoViewer(photos: photos, index: selection.index) { photoIndex = $0 }
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if event.status == .upcoming {
                 bookingBar
@@ -65,56 +78,73 @@ struct EventDetailsScreen: View {
     }
 
     private var hero: some View {
-        let photos = [event.image] + event.gallery
-
-        return TabView(selection: $photoIndex) {
-            ForEach(Array(photos.enumerated()), id: \.offset) { index, name in
-                ClubPhoto(name: name)
-                    .tag(index)
+        Group {
+            if photos.count > 1 {
+                TabView(selection: $photoIndex) {
+                    ForEach(photos.indices, id: \.self) { index in
+                        ClubPhoto(name: photos[index])
+                            .contentShape(Rectangle())
+                            .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+            } else {
+                ClubPhoto(name: photos.first ?? event.image)
             }
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(height: heroHeight)
+        .onChange(of: photos) { _, updatedPhotos in
+            if !updatedPhotos.indices.contains(photoIndex) { photoIndex = 0 }
+        }
         .overlay(alignment: .bottom) {
             Afterglow.shade(Color.black.opacity(0.88)).frame(height: heroHeight * 0.63)
                 .allowsHitTesting(false)
         }
-            .overlay(alignment: .bottomLeading) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Overline("\(L(event.sport.rawValue))  /  \(L(event.location))", color: Afterglow.ivory)
+        .overlay(alignment: .bottomLeading) {
+            VStack(alignment: .leading, spacing: 8) {
+                Overline("\(L(event.sport.rawValue))  /  \(L(event.location))", color: Afterglow.ivory)
 
-                    ScreenTitle(event.title, size: 36)
-                        .lineSpacing(-2)
-                }
-                .padding(.horizontal, Afterglow.inset)
-                .padding(.bottom, 8)
+                ScreenTitle(event.title, size: 36)
+                    .lineSpacing(-2)
             }
+            .padding(.horizontal, Afterglow.inset)
+            .padding(.bottom, 8)
             .allowsHitTesting(false)
-            .overlay(alignment: .bottomTrailing) {
-                if photos.count > 1 {
-                    HStack(spacing: 5) {
-                        ForEach(photos.indices, id: \.self) { index in
-                            Circle()
-                                .fill(index == photoIndex ? Afterglow.ivory : Afterglow.ivory.opacity(0.35))
-                                .frame(width: 6, height: 6)
-                        }
+        }
+        .overlay(alignment: .top) {
+            HStack {
+                BackControl()
+                Spacer()
+                SaveControl(eventID: event.id)
+            }
+            .padding(.horizontal, 19)
+            .padding(.top, 46)
+        }
+    }
+
+    private var thumbnails: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(photos.indices, id: \.self) { index in
+                    Button {
+                        photoIndex = index
+                        viewerIndex = index
+                    } label: {
+                        ClubPhoto(name: photos[index], radius: 8)
+                            .frame(width: 74, height: 54)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(Afterglow.ivory, lineWidth: index == photoIndex ? 1.5 : 0)
+                            }
                     }
-                    .padding(.horizontal, Afterglow.inset)
-                    .padding(.bottom, 14)
-                    .allowsHitTesting(false)
-                    .accessibilityElement()
-                    .accessibilityLabel("\(photoIndex + 1) / \(photos.count)")
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(index + 1) / \(photos.count)")
                 }
             }
-            .overlay(alignment: .top) {
-                HStack {
-                    BackControl()
-                    Spacer()
-                    SaveControl(eventID: event.id)
-                }
-                .padding(.horizontal, 19)
-                .padding(.top, 46)
-            }
+            .padding(.horizontal, Afterglow.inset)
+            .padding(.top, 12)
+        }
+        .scrollIndicators(.hidden)
     }
 
     private var eventFacts: some View {
@@ -196,5 +226,52 @@ struct EventDetailsScreen: View {
         .padding(.horizontal, Afterglow.inset)
         .padding(.bottom, 5)
         .background(Afterglow.background)
+    }
+}
+
+private struct PhotoSelection: Identifiable {
+    let index: Int
+    var id: Int { index }
+}
+
+/// Tam ekran, sağa sola kaydırmalı görsel gezgini.
+private struct PhotoViewer: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let photos: [String]
+    @State var index: Int
+    let onChange: (Int) -> Void
+
+    init(photos: [String], index: Int, onChange: @escaping (Int) -> Void) {
+        self.photos = photos
+        self._index = State(initialValue: index)
+        self.onChange = onChange
+    }
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea()
+
+            TabView(selection: $index) {
+                ForEach(photos.indices, id: \.self) { position in
+                    ClubMediaImage(source: photos[position], fit: true)
+                        .padding(.vertical, 60)
+                        .tag(position)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+            .ignoresSafeArea()
+
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Afterglow.ivory)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white.opacity(0.14), in: .circle)
+            }
+            .padding(16)
+            .accessibilityLabel(L("Close"))
+        }
+        .onChange(of: index) { _, value in onChange(value) }
     }
 }

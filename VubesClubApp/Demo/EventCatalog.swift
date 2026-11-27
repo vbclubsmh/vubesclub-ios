@@ -40,11 +40,13 @@ extension ClubEvent {
             startsAt: card.startsAt,
             endsAt: card.endsAt,
             timeZoneID: card.timeZone)
+        featured = card.featured ?? false
     }
 
     /// Program, buluşma noktası ve organizatör ile zenginleştirilmiş sürüm.
     init(detail: APIEventDetail) {
         var base = ClubEvent(card: detail.event, trainerID: detail.organizer.id.uuidString.lowercased())
+        let featured = base.featured
         let zone = TimeZone(identifier: detail.event.timeZone) ?? .current
         let clock = DateFormatter()
         clock.locale = Locale(identifier: "en_US_POSIX")
@@ -71,6 +73,7 @@ extension ClubEvent {
                 .filter { !$0.isEmpty }.joined(separator: "\n"),
             rating: base.rating, gallery: (detail.gallery ?? []).map(\.url),
             startsAt: base.startsAt, endsAt: base.endsAt, timeZoneID: base.timeZoneID)
+        base.featured = featured
         self = base
     }
 }
@@ -184,8 +187,8 @@ final class EventCatalog {
             } while cursor != nil && cards.count < 500
 
             all = cards.filter { $0.phase != "cancelled" }
-                .sorted { $0.startsAt < $1.startsAt }
                 .map { ClubEvent(card: $0) }
+                .sorted { ($0.featured ? 0 : 1, $0.startsAt ?? .distantFuture) < ($1.featured ? 0 : 1, $1.startsAt ?? .distantFuture) }
             session.adoptSaved(Set(cards.filter(\.isSaved).map { $0.id.uuidString.lowercased() }))
             phase = .loaded
         } catch is CancellationError {

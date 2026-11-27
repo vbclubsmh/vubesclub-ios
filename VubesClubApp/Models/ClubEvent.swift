@@ -107,6 +107,9 @@ struct ClubEvent: Identifiable {
     /// Kapaktan sonra gelen mekân görselleri (detay ekranında kaydırılır).
     var gallery: [String] = []
 
+    /// Studio'da "öne çıkar" işaretli etkinlikler listede en üstte durur.
+    var featured = false
+
     /// Sunucudan gelen etkinliklerde gerçek zamanlar; yerel örneklerde boş.
     var startsAt: Date?
     var endsAt: Date?
