@@ -14,6 +14,7 @@ struct ProfileScreen: View {
     @State private var selectedPanel: Panel?
     @State private var showPhotoMenu = false
     @State private var showPicker = false
+    @State private var showScanner = false
     @State private var pendingPicker = false
     @State private var pendingRemoval = false
     @State private var pickedItem: PhotosPickerItem?
@@ -66,6 +67,9 @@ struct ProfileScreen: View {
 
                     row("Account settings", icon: "person.crop.circle") { selectedPanel = .account }
                     row("Privacy", icon: "lock") { selectedPanel = .privacy }
+                    if session.profile?.fieldStaff == true {
+                        row("Field check-in", icon: "qrcode.viewfinder") { showScanner = true }
+                    }
                     languageRow
                     row("Sign out", icon: "rectangle.portrait.and.arrow.right") { session.signOut() }
                 }
@@ -87,6 +91,7 @@ struct ProfileScreen: View {
                 pendingRemoval = true
             }
         }
+        .fullScreenCover(isPresented: $showScanner) { FieldScannerScreen() }
         .photosPicker(isPresented: $showPicker, selection: $pickedItem, matching: .images)
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }

@@ -77,6 +77,7 @@ struct MemberProfile: Decodable {
     let membershipState: String
     let tier: String
     let trainerRole: Bool
+    let fieldStaff: Bool?
 }
 
 /// Boş bırakılan alan değişmez; doğum tarihi yalnızca bir kez girilebilir.

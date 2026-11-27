@@ -144,6 +144,7 @@
 				DEVELOPMENT_TEAM = 28PQ6563K4;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Etkinlik girişinde üyelerin QR kodunu okutmak için kamera gerekir.";
 				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.mobile;
 			};
@@ -156,6 +157,7 @@
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 28PQ6563K4;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Etkinlik girişinde üyelerin QR kodunu okutmak için kamera gerekir.";
 				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vubesclub.mobile;
 			};

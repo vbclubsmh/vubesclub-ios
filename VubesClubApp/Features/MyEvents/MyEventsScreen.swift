@@ -2,14 +2,11 @@ import SwiftUI
 
 struct MyEventsScreen: View {
     @Environment(ClubSession.self) private var session
-    @Environment(EventCatalog.self) private var catalog
+    @Environment(BookingCenter.self) private var bookings
 
     @State private var showingPast = false
-    @State private var selectedPass: ClubEvent?
-
-    private var bookedEvents: [ClubEvent] {
-        catalog.upcoming.filter { session.bookingIDs.contains($0.id) }
-    }
+    @State private var selectedPass: MyBooking?
+    @State private var passPayload: String?
 
     var body: some View {
         ScrollView {
@@ -28,23 +25,48 @@ struct MyEventsScreen: View {
                 .buttonStyle(.plain)
 
                 if showingPast {
-                    EventListRow(event: DemoCatalog.past)
-                } else {
-                    if bookedEvents.isEmpty {
-                        Text(L("Your confirmed bookings will appear here."))
+                    if bookings.past.isEmpty {
+                        Text(L("Events you’ve attended will appear here."))
                             .font(Afterglow.body(13))
                             .foregroundStyle(Afterglow.muted)
                     }
 
-                    ForEach(bookedEvents) { event in
-                        VStack(spacing: 5) {
-                            EventCover(event: event, height: 230, confirmed: true, compactTitle: true)
-                            passButton(event)
+                    ForEach(bookings.past) { booking in
+                        EventListRow(event: booking.event)
+                    }
+                } else {
+                    let isEmpty = bookings.upcoming.isEmpty && bookings.inProgress.isEmpty
+
+                    if isEmpty && bookings.phase == .failed {
+                        ContentUnavailableView {
+                            Label(L("Bookings couldn’t be loaded"), systemImage: "wifi.slash")
+                        } actions: {
+                            Button(L("Try again")) { Task { await bookings.load(session: session) } }
+                        }
+                    } else if isEmpty && bookings.phase != .loaded {
+                        ProgressView().frame(maxWidth: .infinity, minHeight: 120)
+                    } else {
+                        if bookings.upcoming.isEmpty && bookings.inProgress.isEmpty {
+                            Text(L("Your confirmed bookings will appear here."))
+                                .font(Afterglow.body(13))
+                                .foregroundStyle(Afterglow.muted)
+                        }
+
+                        ForEach(bookings.upcoming) { booking in
+                            VStack(spacing: 5) {
+                                EventCover(event: booking.event, height: 230, confirmed: true, compactTitle: true)
+                                passButton(booking)
+                            }
+                        }
+
+                        if !bookings.inProgress.isEmpty {
+                            ScreenTitle("Happening now", size: 28)
+
+                            ForEach(bookings.inProgress) { booking in
+                                LiveEventCard(booking: booking)
+                            }
                         }
                     }
-
-                    ScreenTitle("Happening now", size: 28)
-                    LiveEventCard(event: DemoCatalog.live)
                 }
             }
             .padding(.horizontal, Afterglow.inset)
@@ -53,22 +75,26 @@ struct MyEventsScreen: View {
         }
         .scrollIndicators(.hidden)
         .background(Afterglow.background.ignoresSafeArea())
-        .sheet(item: $selectedPass) { event in
+        .refreshable { await bookings.load(session: session) }
+        .task { await bookings.load(session: session) }
+        .sheet(item: $selectedPass, onDismiss: { passPayload = nil }) { booking in
             VStack(alignment: .leading, spacing: 18) {
                 ScreenTitle("Event pass", size: 35)
-                EventPass(event: event)
+                LargePassQR(payload: passPayload, size: 210)
+                EventPass(event: booking.event, payload: passPayload)
                 PrimaryAction(title: "Done", icon: "checkmark") { selectedPass = nil }
             }
             .padding(22)
             .screenMotion(.sheet)
-            .presentationDetents([.medium])
+            .presentationDetents([.large])
             .presentationBackground(Afterglow.background)
+            .task { passPayload = await bookings.passPayload(bookingID: booking.bookingID) }
         }
     }
 
-    private func passButton(_ event: ClubEvent) -> some View {
+    private func passButton(_ booking: MyBooking) -> some View {
         Button {
-            selectedPass = event
+            selectedPass = booking
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "ticket")
@@ -85,7 +111,9 @@ struct MyEventsScreen: View {
 }
 
 private struct LiveEventCard: View {
-    let event: ClubEvent
+    let booking: MyBooking
+
+    private var event: ClubEvent { booking.event }
 
     var body: some View {
         NavigationLink(value: ClubRoute.details(event.id)) {
@@ -107,8 +135,8 @@ private struct LiveEventCard: View {
 
                     HStack(spacing: 8) {
                         HStack(spacing: -6) {
-                            ForEach(DemoCatalog.participants.prefix(3)) { participant in
-                                Avatar(image: participant.image, size: 24)
+                            ForEach(Array(booking.participants.enumerated()), id: \.offset) { _, participant in
+                                Avatar(image: participant.image, size: 24, name: participant.name)
                             }
                         }
 

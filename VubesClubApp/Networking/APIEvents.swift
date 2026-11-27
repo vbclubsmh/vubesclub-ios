@@ -82,6 +82,7 @@ struct APITrainerCard: Decodable {
 
 struct APIEventDetail: Decodable {
     let event: APIEventCard
+    let programVersion: String?
     let organizer: APITrainerCard
     let days: [APIProgramDay]
     let preparation: String?

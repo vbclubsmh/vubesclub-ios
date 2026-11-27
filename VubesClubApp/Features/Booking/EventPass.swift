@@ -2,14 +2,22 @@ import SwiftUI
 
 struct EventPass: View {
     let event: ClubEvent
+    var payload: String?
 
     var body: some View {
         HStack(spacing: 16) {
-            Image(systemName: "qrcode")
-                .font(.system(size: 48))
-                .foregroundStyle(Afterglow.ivory)
-                .frame(width: 80)
-                .accessibilityHidden(true)
+            Group {
+                if let payload {
+                    QRCodeView(payload: payload)
+                        .padding(5)
+                        .background(Color.white, in: .rect(cornerRadius: 8))
+                } else {
+                    Image(systemName: "qrcode")
+                        .font(.system(size: 48))
+                        .foregroundStyle(Afterglow.ivory)
+                }
+            }
+            .frame(width: 80, height: 80)
 
             Rectangle()
                 .fill(Afterglow.border)
@@ -35,6 +43,5 @@ struct EventPass: View {
         .background(Afterglow.surface, in: .rect(cornerRadius: 18))
         .overlay { RoundedRectangle(cornerRadius: 18).strokeBorder(Afterglow.border) }
         .accessibilityElement(children: .combine)
-        .accessibilityHint(L("Illustrative pass"))
     }
 }

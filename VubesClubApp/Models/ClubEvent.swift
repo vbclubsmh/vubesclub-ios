@@ -110,6 +110,9 @@ struct ClubEvent: Identifiable {
     /// Studio'da "öne çıkar" işaretli etkinlikler listede en üstte durur.
     var featured = false
 
+    /// Katılım isteği için sunucudaki program sürümü (yalnız detaydan gelir).
+    var programVersion: String?
+
     /// Sunucudan gelen etkinliklerde gerçek zamanlar; yerel örneklerde boş.
     var startsAt: Date?
     var endsAt: Date?

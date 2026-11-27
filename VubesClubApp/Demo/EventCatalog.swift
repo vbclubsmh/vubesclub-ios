@@ -74,6 +74,7 @@ extension ClubEvent {
             rating: base.rating, gallery: (detail.gallery ?? []).map(\.url),
             startsAt: base.startsAt, endsAt: base.endsAt, timeZoneID: base.timeZoneID)
         base.featured = featured
+        base.programVersion = detail.programVersion
         self = base
     }
 }

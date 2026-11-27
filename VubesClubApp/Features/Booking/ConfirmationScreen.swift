@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct ConfirmationScreen: View {
+    @Environment(BookingCenter.self) private var bookings
+
     let event: ClubEvent
     let onMyEvents: () -> Void
+
+    @State private var payload: String?
 
     var body: some View {
         ScrollView {
@@ -25,12 +29,15 @@ struct ConfirmationScreen: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     ScreenTitle("You’re in.", size: 54)
-                    Text(L("Your booking is confirmed."))
+                    Text(L("Your registration has been received."))
                         .font(Afterglow.body(14))
                         .foregroundStyle(Afterglow.muted)
 
-                    EventPass(event: event)
-                        .padding(.top, 28)
+                    LargePassQR(payload: payload)
+                        .padding(.top, 22)
+
+                    EventPass(event: event, payload: payload)
+                        .padding(.top, 18)
                 }
                 .padding(.horizontal, Afterglow.inset)
                 .padding(.top, 9)
@@ -47,5 +54,10 @@ struct ConfirmationScreen: View {
                 .background(Afterglow.background)
         }
         .navigationBarBackButtonHidden()
+        .task {
+            guard let booking = bookings.booking(forEvent: event.id) else { return }
+
+            payload = await bookings.passPayload(bookingID: booking.bookingID)
+        }
     }
 }

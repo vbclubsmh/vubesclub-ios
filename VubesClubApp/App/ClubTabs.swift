@@ -48,6 +48,7 @@ struct ClubTabs: View {
     @State private var paths: [ClubTab: [ClubRoute]] = [:]
     @State private var filter = EventFilter()
     @State private var catalog = EventCatalog()
+    @State private var bookings = BookingCenter()
 
     var body: some View {
         TabView(selection: $selection) {
@@ -59,7 +60,9 @@ struct ClubTabs: View {
         }
         .sensoryFeedback(ClubHaptics.selection, trigger: selection)
         .environment(catalog)
+        .environment(bookings)
         .task { await catalog.load(session: session) }
+        .task { await bookings.load(session: session) }
         .id(session.accountScope)
         .background(Afterglow.background.ignoresSafeArea())
     }

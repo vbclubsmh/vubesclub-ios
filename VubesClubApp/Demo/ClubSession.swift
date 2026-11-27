@@ -156,6 +156,10 @@ final class ClubSession {
     static func phone(_ digits: String) -> String { "+90" + digits }
 
     /// Sunucudaki kayıtlı etkinlikler yüklenince yerel durumu onlara eşitler.
+    func adoptBookings(_ eventIDs: Set<String>) {
+        bookingIDs = eventIDs
+    }
+
     func adoptSaved(_ ids: Set<String>) {
         savedEventIDs = ids
     }
@@ -231,13 +235,6 @@ final class ClubSession {
         guard canRate(event), (1...5).contains(stars) else { return }
 
         eventRatings[event.id] = stars
-    }
-
-    func confirmBooking(for event: ClubEvent) -> Bool {
-        guard isSignedIn, event.status == .upcoming else { return false }
-
-        bookingIDs.insert(event.id)
-        return true
     }
 }
 
