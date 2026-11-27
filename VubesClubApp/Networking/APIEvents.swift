@@ -87,6 +87,7 @@ struct APIEventDetail: Decodable {
     let meetingPoint: APIMeetingPoint
     let transportNotes: String?
     let accommodation: String?
+    let gallery: [MediaReference]?
 }
 
 struct APIPerson: Decodable {

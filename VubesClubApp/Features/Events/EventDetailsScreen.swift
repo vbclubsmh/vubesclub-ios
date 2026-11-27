@@ -9,6 +9,7 @@ struct EventDetailsScreen: View {
     let event: ClubEvent
 
     @State private var showsPreparation = false
+    @State private var photoIndex = 0
 
     var body: some View {
         ScrollView {
@@ -64,11 +65,20 @@ struct EventDetailsScreen: View {
     }
 
     private var hero: some View {
-        ClubPhoto(name: event.image)
-            .frame(height: heroHeight)
-            .overlay(alignment: .bottom) {
-                Afterglow.shade(Color.black.opacity(0.88)).frame(height: heroHeight * 0.63)
+        let photos = [event.image] + event.gallery
+
+        return TabView(selection: $photoIndex) {
+            ForEach(Array(photos.enumerated()), id: \.offset) { index, name in
+                ClubPhoto(name: name)
+                    .tag(index)
             }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(height: heroHeight)
+        .overlay(alignment: .bottom) {
+            Afterglow.shade(Color.black.opacity(0.88)).frame(height: heroHeight * 0.63)
+                .allowsHitTesting(false)
+        }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 8) {
                     Overline("\(L(event.sport.rawValue))  /  \(L(event.location))", color: Afterglow.ivory)
@@ -78,6 +88,23 @@ struct EventDetailsScreen: View {
                 }
                 .padding(.horizontal, Afterglow.inset)
                 .padding(.bottom, 8)
+            }
+            .allowsHitTesting(false)
+            .overlay(alignment: .bottomTrailing) {
+                if photos.count > 1 {
+                    HStack(spacing: 5) {
+                        ForEach(photos.indices, id: \.self) { index in
+                            Circle()
+                                .fill(index == photoIndex ? Afterglow.ivory : Afterglow.ivory.opacity(0.35))
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                    .padding(.horizontal, Afterglow.inset)
+                    .padding(.bottom, 14)
+                    .allowsHitTesting(false)
+                    .accessibilityElement()
+                    .accessibilityLabel("\(photoIndex + 1) / \(photos.count)")
+                }
             }
             .overlay(alignment: .top) {
                 HStack {

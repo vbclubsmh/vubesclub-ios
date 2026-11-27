@@ -69,7 +69,8 @@ extension ClubEvent {
             distance: base.distance, meetingPoint: detail.meetingPoint.label,
             preparation: [detail.preparation, detail.transportNotes].compactMap { $0 }
                 .filter { !$0.isEmpty }.joined(separator: "\n"),
-            rating: base.rating, startsAt: base.startsAt, endsAt: base.endsAt, timeZoneID: base.timeZoneID)
+            rating: base.rating, gallery: (detail.gallery ?? []).map(\.url),
+            startsAt: base.startsAt, endsAt: base.endsAt, timeZoneID: base.timeZoneID)
         self = base
     }
 }

@@ -118,21 +118,7 @@ enum DemoCatalog {
         rating: EventRating(total: 94, count: 20)
     )
 
-    /// Gürkan Bilgen'in düzenlediği tanıtım etkinliği. Program ve fiyat Gürkan'ın paylaşımına göre güncellenecek.
-    static let hasdal = ClubEvent(
-        id: "hasdal-run-meet", title: "Hasdal Run & Meet", location: "Kağıthane, Istanbul", date: "Dec 6",
-        sport: .running, level: .easy, image: "Hasdal", price: 650,
-        program: [ProgramDay(sessions: [
-            .init(time: "09:30", title: "Meet at the club", details: "Welcome & warm-up · 30 min"),
-            .init(time: "10:00", title: "Group run", details: "Easy-pace run around Hasdal · 1 hr"),
-            .init(time: "11:15", title: "Coffee & get-together", details: "Meet the crew · 45 min")
-        ])],
-        status: .upcoming, trainerID: "gurkan", meetingCoordinate: .init(latitude: 41.1021897, longitude: 28.960769),
-        distance: "6 km", meetingPoint: "Yılmaz Ulusoy Atlı Spor Kulübü, Hasdal",
-        preparation: "Bring running shoes, water and a light layer. Organized by Gürkan Bilgen."
-    )
-
-    static let upcoming = [hasdal, camp, forest, mobility, hike, cycling, waterfrontWalk]
+    static let upcoming = [camp, forest, mobility, hike, cycling, waterfrontWalk]
 
     static let participants = [
         Participant(id: "deniz", name: "Deniz", image: "Portrait0", position: .init(x: 169, y: 225)),
