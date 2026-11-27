@@ -17,10 +17,6 @@ final class ClubSession {
     private(set) var trainerIntroductionIDs: Set<String> = []
     private(set) var eventRatings: [String: Int] = [:]
 
-    var upcomingBookings: [ClubEvent] {
-        DemoCatalog.upcoming.filter { bookingIDs.contains($0.id) }
-    }
-
     init(api: ClubAPI = .shared) {
         self.api = api
         api.onSessionExpired = { [weak self] in self?.endLocalSession() }
@@ -159,21 +155,49 @@ final class ClubSession {
     /// `5551234567` → `+905551234567`.
     static func phone(_ digits: String) -> String { "+90" + digits }
 
-    func toggleSaved(eventID: String) {
-        if savedEventIDs.contains(eventID) {
-            savedEventIDs.remove(eventID)
+    /// Sunucudaki kayıtlı etkinlikler yüklenince yerel durumu onlara eşitler.
+    func adoptSaved(_ ids: Set<String>) {
+        savedEventIDs = ids
+    }
+
+    func markFollowing(_ trainerID: String, _ following: Bool) {
+        if following {
+            connectedTrainerIDs.insert(trainerID)
         } else {
-            savedEventIDs.insert(eventID)
+            connectedTrainerIDs.remove(trainerID)
+        }
+    }
+
+    /// Önce ekranda değişir, sonra sunucuya yazılır; sunucu reddederse eski duruma döner.
+    func toggleSaved(eventID: String) {
+        let saving = !savedEventIDs.contains(eventID)
+        if saving { savedEventIDs.insert(eventID) } else { savedEventIDs.remove(eventID) }
+
+        guard UUID(uuidString: eventID) != nil else { return }
+
+        Task {
+            do {
+                try await api.empty(saving ? "PUT" : "DELETE", "me/saved-events/\(eventID)")
+            } catch {
+                if saving { savedEventIDs.remove(eventID) } else { savedEventIDs.insert(eventID) }
+            }
         }
     }
 
     func toggleTrainerConnection(_ trainer: ClubTrainer) {
         guard isSignedIn else { return }
 
-        if connectedTrainerIDs.contains(trainer.id) {
-            connectedTrainerIDs.remove(trainer.id)
-        } else {
-            connectedTrainerIDs.insert(trainer.id)
+        let following = !connectedTrainerIDs.contains(trainer.id)
+        markFollowing(trainer.id, following)
+
+        guard UUID(uuidString: trainer.id) != nil else { return }
+
+        Task {
+            do {
+                try await api.empty(following ? "PUT" : "DELETE", "me/followed-trainers/\(trainer.id)")
+            } catch {
+                markFollowing(trainer.id, !following)
+            }
         }
     }
 
@@ -181,6 +205,16 @@ final class ClubSession {
         guard isSignedIn else { return }
 
         trainerIntroductionIDs.insert(trainer.id)
+
+        guard UUID(uuidString: trainer.id) != nil else { return }
+
+        Task {
+            do {
+                try await api.empty("PUT", "me/trainer-introductions/\(trainer.id)")
+            } catch {
+                trainerIntroductionIDs.remove(trainer.id)
+            }
+        }
     }
 
     func rating(for event: ClubEvent) -> EventRating? {

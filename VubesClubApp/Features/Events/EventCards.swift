@@ -16,7 +16,7 @@ struct EventCover: View {
                 .overlay(alignment: .bottomLeading) {
                     VStack(alignment: .leading, spacing: 10) {
                         Overline(
-                            "\(L(confirmed ? event.date : event.sport.rawValue))  /  \(L(event.location))",
+                            "\(L(confirmed ? event.displayDate : event.sport.rawValue))  /  \(L(event.location))",
                             color: Afterglow.ivory
                         )
 
@@ -64,7 +64,7 @@ struct EventListRow: View {
                     Text(L(event.title))
                         .font(Afterglow.medium(16))
 
-                    Text("\(L(event.date)) · \(L(event.location))")
+                    Text("\(L(event.displayDate)) · \(L(event.location))")
                         .font(Afterglow.body(11.3, relativeTo: .caption))
                         .foregroundStyle(Afterglow.muted)
 

@@ -6,12 +6,14 @@ struct ExploreScreen: View {
 
     @Binding var filter: EventFilter
 
-    @State private var selectedID: ClubEvent.ID? = DemoCatalog.forest.id
+    @Environment(EventCatalog.self) private var catalog
+
+    @State private var selectedID: ClubEvent.ID?
     @State private var camera: MapCameraPosition = .automatic
     @State private var showsFilter = false
 
     private var matchingEvents: [ClubEvent] {
-        DemoCatalog.upcoming.filter { $0.meetingCoordinate != nil && filter.matches($0) }
+        catalog.upcoming.filter { $0.meetingCoordinate != nil && filter.matches($0) }
     }
 
     var body: some View {
@@ -172,7 +174,7 @@ struct ExploreScreen: View {
                         .font(Afterglow.medium(10, relativeTo: .caption))
                         .foregroundStyle(Afterglow.accent)
 
-                    Overline("\(L(event.date)) / \(L(event.location))")
+                    Overline("\(L(event.displayDate)) / \(L(event.location))")
 
                     Text(L(event.title))
                         .font(Afterglow.display(21, relativeTo: .title2))

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EventsScreen: View {
     @Environment(ClubSession.self) private var session
+    @Environment(EventCatalog.self) private var catalog
 
     @Binding var filter: EventFilter
 
@@ -12,7 +13,7 @@ struct EventsScreen: View {
     @State private var category = EventCategory.all
 
     private var visibleEvents: [ClubEvent] {
-        DemoCatalog.upcoming.filter {
+        catalog.upcoming.filter {
             filter.matches($0) && category.matches($0) && (!savedOnly || session.savedEventIDs.contains($0.id))
         }
     }
@@ -80,6 +81,18 @@ struct EventsScreen: View {
 
                         eventList(events)
                     }
+                } else if catalog.phase == .loading || catalog.phase == .idle {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, minHeight: 240)
+                        .accessibilityLabel(L("Loading events"))
+                } else if catalog.phase == .failed && catalog.all.isEmpty {
+                    ContentUnavailableView {
+                        Label(L("Events couldn’t be loaded"), systemImage: "wifi.slash")
+                    } description: {
+                        Text(L("Check your connection and try again."))
+                    } actions: {
+                        Button(L("Try again")) { Task { await catalog.load(session: session) } }
+                    }
                 } else {
                     ContentUnavailableView(
                         L(savedOnly ? "No saved events" : "No matching events"),
@@ -92,6 +105,7 @@ struct EventsScreen: View {
             .padding(.bottom, 18)
         }
         .scrollIndicators(.hidden)
+        .refreshable { await catalog.load(session: session) }
         .background(Afterglow.background.ignoresSafeArea())
         .sheet(isPresented: $showsFilter) {
             EventFilterSheet(filter: $filter)

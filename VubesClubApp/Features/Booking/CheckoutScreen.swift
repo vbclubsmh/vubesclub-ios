@@ -78,7 +78,7 @@ struct CheckoutScreen: View {
                 .frame(width: 112, height: 102)
 
             VStack(alignment: .leading, spacing: 9) {
-                Overline("\(L(event.date))  /  \(L(event.location))")
+                Overline("\(L(event.displayDate))  /  \(L(event.location))")
                 Text(L(event.title))
                     .font(Afterglow.display(25, relativeTo: .title2))
                     .fixedSize(horizontal: false, vertical: true)

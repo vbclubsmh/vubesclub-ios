@@ -1,20 +1,9 @@
 import SwiftUI
 
+/// Club: üyenin takip ettiği veya Studio'da bağlandığı PT'lerin etkinlik akışı.
 struct ClubScreen: View {
     @Environment(ClubSession.self) private var session
-
-    @State private var selectedTrainerID: ClubTrainer.ID? = DemoClub.deniz.id
-    @State private var showingFollowing = false
-
-    private var trainers: [ClubTrainer] {
-        DemoClub.trainers.filter {
-            !showingFollowing || session.connectedTrainerIDs.contains($0.id)
-        }
-    }
-
-    private var trainer: ClubTrainer? {
-        trainers.first { $0.id == selectedTrainerID } ?? trainers.first
-    }
+    @Environment(EventCatalog.self) private var catalog
 
     var body: some View {
         ScrollView {
@@ -23,127 +12,176 @@ struct ClubScreen: View {
                     Overline("The people behind the sessions", color: Afterglow.accent)
                     ScreenTitle("Club")
 
-                    Text(L("Meet the coaches, get to know their crews and see what members thought of their last sessions."))
+                    Text(L("Your trainers’ next sessions, in one place."))
                         .font(Afterglow.body(13))
                         .foregroundStyle(Afterglow.muted)
                 }
 
-                scopeControls
-                    .zIndex(1)
-
-                if let trainer {
-                    trainerPicker(selected: trainer.id)
-                        .zIndex(1)
-                    trainerContent(trainer)
-                } else {
-                    ContentUnavailableView(
-                        "No trainers followed yet",
-                        systemImage: "person.2",
-                        description: Text(L("Follow a trainer to find their crew and events here."))
-                    )
-                }
+                content
             }
             .padding(.horizontal, Afterglow.inset)
             .padding(.top, 10)
             .padding(.bottom, 20)
         }
         .scrollIndicators(.hidden)
+        .refreshable { await catalog.loadFeed(session: session) }
+        .task { await catalog.loadFeed(session: session) }
         .background(Afterglow.background.ignoresSafeArea())
-        .onChange(of: trainers.map(\.id), initial: true) { _, ids in
-            if let selectedTrainerID, ids.contains(selectedTrainerID) { return }
-
-            selectedTrainerID = ids.first
-        }
     }
 
-    private func trainerContent(_ trainer: ClubTrainer) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            TrainerCard(trainer: trainer)
-            crewSection(trainer)
-            eventsSection(L("Upcoming with %@", String(trainer.name.split(separator: " ").first ?? "")),
-                          events: DemoClub.events(for: trainer, status: .upcoming))
-            eventsSection("Rated experiences", events: DemoClub.events(for: trainer, status: .past))
-        }
-    }
-
-    private var scopeControls: some View {
-        HStack(spacing: 8) {
-            Button { showingFollowing = false } label: {
-                Pill(title: "All trainers", selected: !showingFollowing)
+    @ViewBuilder
+    private var content: some View {
+        switch catalog.feedPhase {
+        case .idle, .loading:
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: 240)
+                .accessibilityLabel(L("Loading Club"))
+        case .locked:
+            ContentUnavailableView(
+                L("Club opens after your first booking"),
+                systemImage: "lock",
+                description: Text(L("Trainers, crews and ratings are available to members with a confirmed booking."))
+            )
+        case .failed:
+            ContentUnavailableView {
+                Label(L("Club couldn’t be loaded"), systemImage: "wifi.slash")
+            } description: {
+                Text(L("Check your connection and try again."))
+            } actions: {
+                Button(L("Try again")) { Task { await catalog.loadFeed(session: session) } }
             }
-
-            Button { showingFollowing = true } label: {
-                Pill(title: "Following", icon: "person.crop.circle.badge.checkmark", selected: showingFollowing)
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func trainerPicker(selected: String) -> some View {
-        HStack(alignment: .top, spacing: 9) {
-            ForEach(trainers) { trainer in
-                let isSelected = trainer.id == selected
-
-                Button {
-                    selectedTrainerID = trainer.id
-                } label: {
-                    VStack(spacing: 6) {
-                        Avatar(image: trainer.image, size: 37, selected: isSelected)
-
-                        Text(trainer.name)
-                            .font(Afterglow.medium(11, relativeTo: .caption))
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .foregroundStyle(isSelected ? Afterglow.ivory : Afterglow.muted)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 9)
-                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 68)
-                    .background(Afterglow.surface, in: .rect(cornerRadius: 12))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(isSelected ? Afterglow.accent : Afterglow.border)
-                            .allowsHitTesting(false)
-                    }
-                    .contentShape(Rectangle())
+        case .loaded:
+            if catalog.feed.trainers.isEmpty {
+                ContentUnavailableView {
+                    Label(L("No trainers yet"), systemImage: "person.2")
+                } description: {
+                    Text(L("Follow a trainer, or ask the club to connect you with one."))
+                } actions: {
+                    NavigationLink(value: ClubRoute.trainerDirectory) { Text(L("Discover trainers")) }
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            } else {
+                feed
             }
         }
-        .sensoryFeedback(ClubHaptics.selection, trigger: selectedTrainerID)
     }
 
-    private func crewSection(_ trainer: ClubTrainer) -> some View {
+    private var feed: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            trainerStrip
+
+            VStack(alignment: .leading, spacing: 10) {
+                Overline("For you", color: Afterglow.accent)
+
+                if catalog.feed.forYou.isEmpty {
+                    Text(L("No upcoming events from your trainers yet."))
+                        .font(Afterglow.body(13))
+                        .foregroundStyle(Afterglow.muted)
+                }
+
+                ForEach(catalog.feed.forYou) { item in
+                    FeedEventCard(item: item)
+                }
+            }
+
+            if !catalog.feed.rated.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Hairline()
+                    ScreenTitle("Rated experiences", size: 26)
+
+                    ForEach(catalog.feed.rated) { item in
+                        EventListRow(event: item.event)
+                    }
+                }
+            }
+        }
+    }
+
+    private var trainerStrip: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Overline("Crew", color: Afterglow.accent)
-            ScreenTitle(trainer.crewName, size: 26)
+            Overline("Your trainers", color: Afterglow.accent)
 
             ScrollView(.horizontal) {
-                HStack(spacing: 16) {
-                    ForEach(trainer.crew) { member in
-                        VStack(spacing: 6) {
-                            Avatar(image: member.image, size: 43)
+                HStack(alignment: .top, spacing: 16) {
+                    ForEach(catalog.feed.trainers) { item in
+                        NavigationLink(value: ClubRoute.trainer(item.trainer.id)) {
+                            VStack(spacing: 6) {
+                                Avatar(image: item.trainer.image, size: 52, selected: true, name: item.trainer.name)
 
-                            Text(member.name)
-                                .font(Afterglow.medium(12, relativeTo: .caption))
+                                Text(item.trainer.name.split(separator: " ").first.map(String.init) ?? item.trainer.name)
+                                    .font(Afterglow.medium(11, relativeTo: .caption))
+                                    .foregroundStyle(Afterglow.muted)
+                                    .lineLimit(1)
+                            }
+                            .frame(minWidth: 56)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(item.trainer.name)
+                    }
+
+                    NavigationLink(value: ClubRoute.trainerDirectory) {
+                        VStack(spacing: 6) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 17))
+                                .foregroundStyle(Afterglow.ivory)
+                                .frame(width: 52, height: 52)
+                                .overlay { Circle().strokeBorder(Afterglow.border, style: StrokeStyle(lineWidth: 1, dash: [3, 3])) }
+
+                            Text(L("Discover"))
+                                .font(Afterglow.medium(11, relativeTo: .caption))
                                 .foregroundStyle(Afterglow.muted)
                         }
+                        .frame(minWidth: 56)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L("Discover trainers"))
                 }
             }
             .scrollIndicators(.hidden)
         }
     }
+}
 
-    private func eventsSection(_ title: String, events: [ClubEvent]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Hairline()
-            ScreenTitle(title, size: 26)
+/// Akıştaki etkinlik: kapak, ad, tarih ve organizatör etiketi.
+struct FeedEventCard: View {
+    let item: FeedEvent
 
-            ForEach(events) { event in
-                EventListRow(event: event)
+    var body: some View {
+        let event = item.event
+
+        NavigationLink(value: ClubRoute.details(event.id)) {
+            VStack(alignment: .leading, spacing: 0) {
+                ClubPhoto(name: event.image)
+                    .frame(height: 124)
+
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(L(event.title))
+                        .font(Afterglow.medium(16))
+                        .foregroundStyle(Afterglow.text)
+
+                    HStack(spacing: 8) {
+                        Text("\(event.displayDate) · \(L(event.location))")
+                            .font(Afterglow.body(11.5, relativeTo: .caption))
+                            .foregroundStyle(Afterglow.muted)
+                            .lineLimit(1)
+
+                        Spacer(minLength: 4)
+
+                        HStack(spacing: 5) {
+                            Avatar(image: item.organizerImage, size: 18, name: item.organizer)
+                            Text(item.organizer.split(separator: " ").first.map(String.init) ?? item.organizer)
+                                .font(Afterglow.medium(11, relativeTo: .caption))
+                                .foregroundStyle(Afterglow.ivory)
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                .padding(12)
             }
+            .background(Afterglow.surface, in: .rect(cornerRadius: 14))
+            .clipShape(.rect(cornerRadius: 14))
+            .overlay { RoundedRectangle(cornerRadius: 14).strokeBorder(Afterglow.border.opacity(0.8)) }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 }

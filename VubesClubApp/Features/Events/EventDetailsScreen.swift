@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EventDetailsScreen: View {
     @Environment(ClubSession.self) private var session
+    @Environment(EventCatalog.self) private var catalog
 
     @ScaledMetric(relativeTo: .largeTitle) private var heroHeight = 283.0
 
@@ -24,7 +25,7 @@ struct EventDetailsScreen: View {
 
                     ItineraryView(days: event.program)
 
-                    if let trainer = DemoClub.trainer(event.trainerID) {
+                    if let trainer = catalog.trainer(event.trainerID) {
                         TrainerCard(trainer: trainer)
                     }
 
@@ -92,20 +93,20 @@ struct EventDetailsScreen: View {
     private var eventFacts: some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: 15) {
-                MetadataLabel(title: event.date, icon: "calendar")
+                MetadataLabel(title: event.displayDate, icon: "calendar")
                 MetadataLabel(title: event.level.rawValue, icon: "mountain.2")
 
                 Spacer(minLength: 0)
 
-                if let trainer = DemoClub.trainer(event.trainerID) {
+                if let trainer = catalog.trainer(event.trainerID) {
                     organizer(trainer)
                 }
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                MetadataLabel(title: event.date, icon: "calendar")
+                MetadataLabel(title: event.displayDate, icon: "calendar")
                 MetadataLabel(title: event.level.rawValue, icon: "mountain.2")
-                if let trainer = DemoClub.trainer(event.trainerID) {
+                if let trainer = catalog.trainer(event.trainerID) {
                     organizer(trainer)
                 }
             }

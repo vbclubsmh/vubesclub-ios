@@ -69,7 +69,7 @@ struct FeaturedEvents: View {
                     }
 
                     VStack(alignment: .leading, spacing: 7) {
-                        MetadataLabel(title: event.date, icon: "calendar")
+                        MetadataLabel(title: event.displayDate, icon: "calendar")
                         MetadataLabel(title: event.level.rawValue, icon: "mountain.2")
                     }
                 }
@@ -85,7 +85,7 @@ struct FeaturedEvents: View {
 
     private func eventMetadata(_ event: ClubEvent) -> some View {
         Group {
-            MetadataLabel(title: event.date, icon: "calendar")
+            MetadataLabel(title: event.displayDate, icon: "calendar")
             MetadataLabel(title: event.level.rawValue, icon: "mountain.2")
         }
     }

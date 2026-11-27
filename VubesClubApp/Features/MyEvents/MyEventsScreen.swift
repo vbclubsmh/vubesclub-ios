@@ -2,9 +2,14 @@ import SwiftUI
 
 struct MyEventsScreen: View {
     @Environment(ClubSession.self) private var session
+    @Environment(EventCatalog.self) private var catalog
 
     @State private var showingPast = false
     @State private var selectedPass: ClubEvent?
+
+    private var bookedEvents: [ClubEvent] {
+        catalog.upcoming.filter { session.bookingIDs.contains($0.id) }
+    }
 
     var body: some View {
         ScrollView {
@@ -25,13 +30,13 @@ struct MyEventsScreen: View {
                 if showingPast {
                     EventListRow(event: DemoCatalog.past)
                 } else {
-                    if session.upcomingBookings.isEmpty {
+                    if bookedEvents.isEmpty {
                         Text(L("Your confirmed bookings will appear here."))
                             .font(Afterglow.body(13))
                             .foregroundStyle(Afterglow.muted)
                     }
 
-                    ForEach(session.upcomingBookings) { event in
+                    ForEach(bookedEvents) { event in
                         VStack(spacing: 5) {
                             EventCover(event: event, height: 230, confirmed: true, compactTitle: true)
                             passButton(event)

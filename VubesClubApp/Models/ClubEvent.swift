@@ -9,6 +9,18 @@ enum Sport: String, CaseIterable {
     case walking = "Walking"
     case cycling = "Cycling"
 
+    /// Sunucudaki spor kodundan (`trailRunning`, `running` …) çözülür; bilinmeyen kod koşuya düşer.
+    init(code: String) {
+        switch code {
+        case "trailRunning": self = .trailRunning
+        case "mobility": self = .mobility
+        case "hiking": self = .hiking
+        case "walking": self = .walking
+        case "cycling": self = .cycling
+        default: self = .running
+        }
+    }
+
     var symbol: String {
         switch self {
         case .trailRunning, .running: "figure.run"
@@ -91,6 +103,33 @@ struct ClubEvent: Identifiable {
     var preparation = "Bring trail shoes, water, a light layer and sun protection."
 
     var rating: EventRating?
+
+    /// Sunucudan gelen etkinliklerde gerçek zamanlar; yerel örneklerde boş.
+    var startsAt: Date?
+    var endsAt: Date?
+    var timeZoneID: String?
+
+    /// Seçili dilde tarih: sunucu etkinliklerinde zamandan üretilir, örneklerde `date` metni çevrilir.
+    @MainActor
+    var displayDate: String {
+        guard let startsAt, let endsAt else { return L(date) }
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZoneID.flatMap(TimeZone.init(identifier:)) ?? .current
+        let locale = AppLanguage.shared.locale
+        let day = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone)
+            .day().month(.abbreviated)
+
+        if calendar.isDate(startsAt, inSameDayAs: endsAt) { return startsAt.formatted(day) }
+        let first = calendar.dateComponents([.year, .month], from: startsAt)
+        let last = calendar.dateComponents([.year, .month], from: endsAt)
+        if first == last {
+            let month = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone)
+                .month(.abbreviated)
+            return "\(calendar.component(.day, from: startsAt))–\(calendar.component(.day, from: endsAt)) \(startsAt.formatted(month))"
+        }
+        return "\(startsAt.formatted(day)) – \(endsAt.formatted(day))"
+    }
 
     @MainActor
     var priceLabel: String {

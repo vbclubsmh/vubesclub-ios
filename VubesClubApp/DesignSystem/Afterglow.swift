@@ -95,7 +95,9 @@ struct ClubMediaImage: View {
 
     var body: some View {
         Group {
-            if source.hasPrefix("/"), let reference = URL(string: source),
+            if source.isEmpty {
+                Afterglow.surface
+            } else if source.hasPrefix("/"), let reference = URL(string: source),
                let url = ClubAPI.shared.resourceURL(reference) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -142,9 +144,22 @@ struct Avatar: View {
     let image: String
     var size: CGFloat = 24
     var selected = false
+    /// Fotoğraf yoksa baş harfler gösterilir.
+    var name: String?
+
+    private var initials: String {
+        (name ?? "").split(separator: " ").prefix(2).compactMap(\.first).map(String.init).joined().uppercased()
+    }
 
     var body: some View {
         ClubMediaImage(source: image)
+            .overlay {
+                if image.isEmpty {
+                    Text(initials)
+                        .font(Afterglow.display(size * 0.4))
+                        .foregroundStyle(Afterglow.ivory)
+                }
+            }
             .frame(width: size, height: size)
             .clipShape(Circle())
             .overlay {

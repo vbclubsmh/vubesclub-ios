@@ -23,6 +23,22 @@ enum ClubRoute: Hashable {
     case checkout(String)
     case confirmation(String)
     case activityMap(String)
+    case trainer(String)
+    case trainerDirectory
+}
+
+/// Detayı sunucudan tamamlar: önce listedeki özet görünür, program ve organizatör yüklenince güncellenir.
+struct EventDetailsLoader: View {
+    @Environment(EventCatalog.self) private var catalog
+
+    let id: String
+
+    var body: some View {
+        if let event = catalog.event(id) {
+            EventDetailsScreen(event: event)
+                .task(id: id) { await catalog.loadDetail(id: id) }
+        }
+    }
 }
 
 struct ClubTabs: View {
@@ -31,6 +47,7 @@ struct ClubTabs: View {
     @State private var selection: ClubTab = .events
     @State private var paths: [ClubTab: [ClubRoute]] = [:]
     @State private var filter = EventFilter()
+    @State private var catalog = EventCatalog()
 
     var body: some View {
         TabView(selection: $selection) {
@@ -41,6 +58,8 @@ struct ClubTabs: View {
             }
         }
         .sensoryFeedback(ClubHaptics.selection, trigger: selection)
+        .environment(catalog)
+        .task { await catalog.load(session: session) }
         .id(session.accountScope)
         .background(Afterglow.background.ignoresSafeArea())
     }
@@ -133,15 +152,19 @@ struct ClubTabs: View {
     private func destination(_ route: ClubRoute, from tab: ClubTab) -> some View {
         switch route {
         case .details(let id):
-            if let event = DemoCatalog.event(id) { EventDetailsScreen(event: event) }
+            EventDetailsLoader(id: id)
         case .activityMap(let id):
-            if let event = DemoCatalog.event(id) { ActivityMapScreen(event: event) }
+            if let event = catalog.event(id) ?? DemoCatalog.event(id) { ActivityMapScreen(event: event) }
+        case .trainer(let id):
+            TrainerDetailScreen(trainerID: id)
+        case .trainerDirectory:
+            TrainerDirectoryScreen()
         case .checkout(let id):
-            if let event = DemoCatalog.event(id) {
+            if let event = catalog.event(id) ?? DemoCatalog.event(id) {
                 CheckoutScreen(event: event) { paths[tab, default: []].append(.confirmation(id)) }
             }
         case .confirmation(let id):
-            if let event = DemoCatalog.event(id) {
+            if let event = catalog.event(id) ?? DemoCatalog.event(id) {
                 ConfirmationScreen(event: event) {
                     paths[tab] = []
                     paths[.myEvents] = []

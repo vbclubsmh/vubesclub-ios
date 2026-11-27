@@ -21,7 +21,7 @@ struct EventPass: View {
 
                 Text(L(event.title)).font(Afterglow.medium(13.3))
 
-                Text([event.date, event.program.first?.sessions.first?.time, event.meetingPoint]
+                Text([event.displayDate, event.program.first?.sessions.first?.time, event.meetingPoint]
                     .compactMap { $0 }.map { L($0) }.joined(separator: " · "))
                     .font(Afterglow.body(11, relativeTo: .caption))
                     .foregroundStyle(Afterglow.muted)
