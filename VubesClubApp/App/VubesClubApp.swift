@@ -7,6 +7,11 @@ struct VubesClubApp: App {
     @State private var session = ClubSession()
     @State private var startupPhase = StartupPhase.splash
 
+    init() {
+        // Yenileme göstergesini logo üstlenir; sistemin döner göstergesi görünmez.
+        UIRefreshControl.appearance().tintColor = .clear
+    }
+
     var body: some Scene {
         WindowGroup {
             ZStack {

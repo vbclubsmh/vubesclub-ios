@@ -8,6 +8,8 @@ struct ClubScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                LogoRefreshProbe()
+
                 VStack(alignment: .leading, spacing: 7) {
                     Overline("The people behind the sessions", color: Afterglow.accent)
                     ScreenTitle("Club")
@@ -24,7 +26,7 @@ struct ClubScreen: View {
             .padding(.bottom, 20)
         }
         .scrollIndicators(.hidden)
-        .refreshable { await catalog.loadFeed(session: session) }
+        .logoRefreshable { await catalog.loadFeed(session: session) }
         .task { await catalog.loadFeed(session: session) }
         .background(Afterglow.background.ignoresSafeArea())
     }
@@ -36,12 +38,6 @@ struct ClubScreen: View {
             ProgressView()
                 .frame(maxWidth: .infinity, minHeight: 240)
                 .accessibilityLabel(L("Loading Club"))
-        case .locked:
-            ContentUnavailableView(
-                L("Club opens after your first booking"),
-                systemImage: "lock",
-                description: Text(L("Trainers, crews and ratings are available to members with a confirmed booking."))
-            )
         case .failed:
             ContentUnavailableView {
                 Label(L("Club couldn’t be loaded"), systemImage: "wifi.slash")
@@ -50,30 +46,20 @@ struct ClubScreen: View {
             } actions: {
                 Button(L("Try again")) { Task { await catalog.loadFeed(session: session) } }
             }
-        case .loaded:
-            if catalog.feed.trainers.isEmpty {
-                ContentUnavailableView {
-                    Label(L("No trainers yet"), systemImage: "person.2")
-                } description: {
-                    Text(L("Follow a trainer, or ask the club to connect you with one."))
-                } actions: {
-                    NavigationLink(value: ClubRoute.trainerDirectory) { Text(L("Discover trainers")) }
-                }
-            } else {
-                feed
-            }
+        case .loaded, .locked:
+            feed
         }
     }
 
     private var feed: some View {
         VStack(alignment: .leading, spacing: 20) {
-            trainerStrip
+            allTrainers
 
             VStack(alignment: .leading, spacing: 10) {
-                Overline("For you", color: Afterglow.accent)
+                Overline(catalog.feed.trainers.isEmpty ? "Coming up" : "For you", color: Afterglow.accent)
 
                 if catalog.feed.forYou.isEmpty {
-                    Text(L("No upcoming events from your trainers yet."))
+                    Text(L("No upcoming events yet."))
                         .font(Afterglow.body(13))
                         .foregroundStyle(Afterglow.muted)
                 }
@@ -96,44 +82,43 @@ struct ClubScreen: View {
         }
     }
 
-    private var trainerStrip: some View {
+    /// Takip edilen veya Studio'da bağlanan PT'ler başta.
+    private var sortedTrainers: [ClubTrainer] {
+        let mine = Set(catalog.feed.trainers.map(\.trainer.id)).union(session.connectedTrainerIDs)
+        return catalog.directory.sorted { (mine.contains($0.id) ? 0 : 1) < (mine.contains($1.id) ? 0 : 1) }
+    }
+
+    private func isMine(_ trainer: ClubTrainer) -> Bool {
+        session.connectedTrainerIDs.contains(trainer.id) || catalog.feed.trainers.contains { $0.trainer.id == trainer.id }
+    }
+
+    private var allTrainers: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Overline("Your trainers", color: Afterglow.accent)
+            Overline("All trainers", color: Afterglow.accent)
 
             ScrollView(.horizontal) {
                 HStack(alignment: .top, spacing: 16) {
-                    ForEach(catalog.feed.trainers) { item in
-                        NavigationLink(value: ClubRoute.trainer(item.trainer.id)) {
+                    ForEach(sortedTrainers) { trainer in
+                        NavigationLink(value: ClubRoute.trainer(trainer.id)) {
                             VStack(spacing: 6) {
-                                Avatar(image: item.trainer.image, size: 52, selected: true, name: item.trainer.name)
+                                Avatar(image: trainer.image, size: 52,
+                                       selected: isMine(trainer), name: trainer.name)
 
-                                Text(item.trainer.name.split(separator: " ").first.map(String.init) ?? item.trainer.name)
+                                Text(trainer.name.split(separator: " ").first.map(String.init) ?? trainer.name)
                                     .font(Afterglow.medium(11, relativeTo: .caption))
+                                    .foregroundStyle(Afterglow.text)
+                                    .lineLimit(1)
+
+                                Text(L(trainer.specialty))
+                                    .font(Afterglow.body(10, relativeTo: .caption2))
                                     .foregroundStyle(Afterglow.muted)
                                     .lineLimit(1)
                             }
-                            .frame(minWidth: 56)
+                            .frame(width: 96)
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(item.trainer.name)
+                        .accessibilityLabel("\(trainer.name), \(L(trainer.specialty))")
                     }
-
-                    NavigationLink(value: ClubRoute.trainerDirectory) {
-                        VStack(spacing: 6) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 17))
-                                .foregroundStyle(Afterglow.ivory)
-                                .frame(width: 52, height: 52)
-                                .overlay { Circle().strokeBorder(Afterglow.border, style: StrokeStyle(lineWidth: 1, dash: [3, 3])) }
-
-                            Text(L("Discover"))
-                                .font(Afterglow.medium(11, relativeTo: .caption))
-                                .foregroundStyle(Afterglow.muted)
-                        }
-                        .frame(minWidth: 56)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(L("Discover trainers"))
                 }
             }
             .scrollIndicators(.hidden)

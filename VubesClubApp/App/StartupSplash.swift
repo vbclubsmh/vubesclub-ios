@@ -126,7 +126,7 @@ struct StartupSplash: View {
     }
 }
 
-private struct SplashWordmark: View {
+struct SplashWordmark: View {
     private static let wordDuration = 1.1
     private static let clubDelay = 0.48
 

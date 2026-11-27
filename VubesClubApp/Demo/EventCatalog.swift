@@ -148,6 +148,7 @@ final class EventCatalog {
     private(set) var phase = Phase.idle
     private(set) var all: [ClubEvent] = []
     private(set) var feed = ClubFeedContent()
+    private(set) var directory: [ClubTrainer] = []
     private(set) var feedPhase = FeedPhase.idle
 
     private var detailed: [String: ClubEvent] = [:]
@@ -224,6 +225,7 @@ final class EventCatalog {
             content.forYou = remote.forYou.map(feedEvent)
             content.rated = remote.ratedExperiences.map(feedEvent)
             feed = content
+            if let everyone = await trainerDirectory() { directory = everyone }
             feedPhase = .loaded
         } catch let failure as ClubAPIError {
             if case .server(403, _, _) = failure {

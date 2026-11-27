@@ -31,6 +31,8 @@ struct EventsScreen: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: 17) {
+                LogoRefreshProbe()
+
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 7) {
                         Overline("The Vubes calendar", color: Afterglow.accent)
@@ -113,7 +115,7 @@ struct EventsScreen: View {
             .padding(.bottom, 18)
         }
         .scrollIndicators(.hidden)
-        .refreshable { await catalog.load(session: session) }
+        .logoRefreshable { await catalog.load(session: session) }
         .background(Afterglow.background.ignoresSafeArea())
         .sheet(isPresented: $showsFilter) {
             EventFilterSheet(filter: $filter)

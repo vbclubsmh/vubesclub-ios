@@ -11,6 +11,8 @@ struct MyEventsScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 17) {
+                LogoRefreshProbe()
+
                 ScreenTitle("My Events")
 
                 HStack(spacing: 7) {
@@ -75,7 +77,7 @@ struct MyEventsScreen: View {
         }
         .scrollIndicators(.hidden)
         .background(Afterglow.background.ignoresSafeArea())
-        .refreshable { await bookings.load(session: session) }
+        .logoRefreshable { await bookings.load(session: session) }
         .task { await bookings.load(session: session) }
         .sheet(item: $selectedPass, onDismiss: { passPayload = nil }) { booking in
             VStack(alignment: .leading, spacing: 18) {

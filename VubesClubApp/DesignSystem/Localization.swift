@@ -364,6 +364,7 @@ enum Translations {
         "No trainers yet": "Henüz PT yok",
         "Follow a trainer, or ask the club to connect you with one.": "Bir PT’yi takip et ya da kulüpten seni bağlamasını iste.",
         "No upcoming events from your trainers yet.": "PT’lerinden yaklaşan etkinlik yok.",
+        "No upcoming events yet.": "Henüz yaklaşan etkinlik yok.",
         "Trainer unavailable": "PT görüntülenemiyor",
         "This profile couldn’t be loaded.": "Bu profil yüklenemedi.",
         "Trainers couldn’t be loaded": "PT’ler yüklenemedi",
