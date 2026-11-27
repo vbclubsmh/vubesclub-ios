@@ -151,6 +151,8 @@ final class EventCatalog {
     private(set) var directory: [ClubTrainer] = []
     private(set) var feedPhase = FeedPhase.idle
 
+    private var loadingEvents = false
+    private var loadingFeed = false
     private var detailed: [String: ClubEvent] = [:]
     private var trainers: [String: ClubTrainer] = [:]
     private let api: ClubAPI
@@ -172,9 +174,13 @@ final class EventCatalog {
     // MARK: Events
 
     func load(session: ClubSession) async {
-        guard phase != .loading else { return }
+        guard !loadingEvents else { return }
 
-        phase = .loading
+        loadingEvents = true
+        defer { loadingEvents = false }
+        // Yenilemede mevcut liste görünür kalır; yalnızca ilk yüklemede yükleniyor görünür.
+        let previous = phase
+        if all.isEmpty { phase = .loading }
         do {
             var cards: [APIEventCard] = []
             var cursor: String?
@@ -194,9 +200,9 @@ final class EventCatalog {
             session.adoptSaved(Set(cards.filter(\.isSaved).map { $0.id.uuidString.lowercased() }))
             phase = .loaded
         } catch is CancellationError {
-            phase = all.isEmpty ? .idle : .loaded
+            phase = all.isEmpty ? .idle : previous == .failed ? .loaded : previous
         } catch {
-            phase = .failed
+            phase = all.isEmpty ? .failed : .loaded
         }
     }
 
@@ -210,9 +216,13 @@ final class EventCatalog {
     // MARK: Club
 
     func loadFeed(session: ClubSession) async {
-        guard feedPhase != .loading else { return }
+        guard !loadingFeed else { return }
 
-        feedPhase = .loading
+        loadingFeed = true
+        defer { loadingFeed = false }
+        // Yenilemede mevcut içerik görünür kalır; yalnızca ilk yüklemede yükleniyor görünür.
+        let hasContent = feedPhase == .loaded
+        if !hasContent { feedPhase = .loading }
         do {
             let remote = try await api.get("club/feed", as: APIClubFeed.self)
             for item in remote.trainers { session.markFollowing(item.trainer.id.uuidString.lowercased(), item.trainer.isFollowed) }
@@ -235,9 +245,9 @@ final class EventCatalog {
                 feedPhase = .failed
             }
         } catch is CancellationError {
-            feedPhase = .idle
+            feedPhase = hasContent ? .loaded : .idle
         } catch {
-            feedPhase = .failed
+            feedPhase = hasContent ? .loaded : .failed
         }
     }
 

@@ -46,9 +46,11 @@ private struct LogoRefreshModifier: ViewModifier {
             .coordinateSpace(name: LogoRefresh.space)
             .refreshable {
                 refreshing = true
-                async let work: Void = action()
+                // Yükleme ayrı bir görevde çalışır: görünüm yeniden çizilip yenileme görevi iptal
+                // edilse bile veri gelir ve gösterge asla takılı kalmaz.
+                let work = Task { @MainActor in await action() }
                 try? await Task.sleep(for: reduceMotion ? .milliseconds(400) : LogoRefresh.minimumDuration)
-                await work
+                await work.value
                 refreshing = false
             }
             .backgroundPreferenceValue(PullOffsetKey.self) { raw in

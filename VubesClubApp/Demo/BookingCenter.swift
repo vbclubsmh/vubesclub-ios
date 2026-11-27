@@ -24,6 +24,7 @@ final class BookingCenter {
     private(set) var inProgress: [MyBooking] = []
     private(set) var past: [MyBooking] = []
 
+    private var loading = false
     private var passes: [String: String] = [:]
     private let api: ClubAPI
 
@@ -36,9 +37,13 @@ final class BookingCenter {
     }
 
     func load(session: ClubSession) async {
-        guard phase != .loading else { return }
+        guard !loading else { return }
 
-        phase = .loading
+        loading = true
+        defer { loading = false }
+        // Yenilemede mevcut liste görünür kalır; yalnızca ilk yüklemede yükleniyor görünür.
+        let hasContent = phase == .loaded
+        if !hasContent { phase = .loading }
         do {
             upcoming = try await bucket("upcoming")
             inProgress = try await bucket("inProgress")
@@ -46,9 +51,9 @@ final class BookingCenter {
             session.adoptBookings(Set((upcoming + inProgress).map(\.event.id)))
             phase = .loaded
         } catch is CancellationError {
-            phase = .idle
+            phase = hasContent ? .loaded : .idle
         } catch {
-            phase = .failed
+            phase = hasContent ? .loaded : .failed
         }
     }
 
