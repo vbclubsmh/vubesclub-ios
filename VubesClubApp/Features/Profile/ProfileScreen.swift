@@ -14,6 +14,8 @@ struct ProfileScreen: View {
     @State private var selectedPanel: Panel?
     @State private var showPhotoMenu = false
     @State private var showPicker = false
+    @State private var pendingPicker = false
+    @State private var pendingRemoval = false
     @State private var pickedItem: PhotosPickerItem?
     @State private var isUpdatingPhoto = false
     @State private var photoError: String?
@@ -41,7 +43,7 @@ struct ProfileScreen: View {
                         Wordmark(width: 46).padding(16)
                     }
                     .overlay(alignment: .bottomLeading) {
-                        photoButton.offset(x: 17, y: 26)
+                        photoButton.offset(x: 17, y: 38)
                     }
 
                 VStack(alignment: .leading, spacing: 5) {
@@ -57,7 +59,7 @@ struct ProfileScreen: View {
                             .foregroundStyle(Afterglow.muted)
                     }
                 }
-                .padding(.top, 22)
+                .padding(.top, 36)
 
                 VStack(spacing: 0) {
                     Hairline()
@@ -75,10 +77,14 @@ struct ProfileScreen: View {
         .scrollIndicators(.hidden)
         .background(Afterglow.background.ignoresSafeArea())
         .task { await session.refreshProfile() }
-        .confirmationDialog(L("Profile photo"), isPresented: $showPhotoMenu) {
-            Button(L("Choose from library")) { showPicker = true }
-            if session.profile?.avatar != nil {
-                Button(L("Remove photo"), role: .destructive) { removePhoto() }
+        .fullScreenCover(isPresented: $showPhotoMenu, onDismiss: {
+            if pendingPicker { pendingPicker = false; showPicker = true }
+            if pendingRemoval { pendingRemoval = false; removePhoto() }
+        }) {
+            ProfilePhotoViewer(url: session.profile?.avatar?.url, name: memberName) {
+                pendingPicker = true
+            } onRemove: {
+                pendingRemoval = true
             }
         }
         .photosPicker(isPresented: $showPicker, selection: $pickedItem, matching: .images)
@@ -120,12 +126,12 @@ struct ProfileScreen: View {
 
     private var photoButton: some View {
         Button { showPhotoMenu = true } label: {
-            ProfileAvatar(url: session.profile?.avatar?.url, name: memberName, size: 72)
+            ProfileAvatar(url: session.profile?.avatar?.url, name: memberName, size: 100)
                 .overlay(alignment: .bottomTrailing) {
                     Image(systemName: isUpdatingPhoto ? "hourglass" : "camera.fill")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Afterglow.background)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 28, height: 28)
                         .background(Afterglow.ivory, in: Circle())
                         .overlay { Circle().strokeBorder(Afterglow.background, lineWidth: 2) }
                         .offset(x: 3, y: 3)

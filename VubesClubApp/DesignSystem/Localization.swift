@@ -291,6 +291,7 @@ enum Translations {
         "That phone number is already used by another membership.": "Bu telefon numarası başka bir üyelikte kullanılıyor.",
         "The demo account’s contact details can’t be changed.": "Demo hesabının iletişim bilgileri değiştirilemez.",
         "Change photo": "Fotoğrafı değiştir",
+        "Add photo": "Fotoğraf ekle",
         "Choose from library": "Kütüphaneden seç",
         "Remove photo": "Fotoğrafı kaldır",
         "Profile photo": "Profil fotoğrafı",
