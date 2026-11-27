@@ -184,7 +184,7 @@ struct SplashMonogram: View {
     }
 }
 
-private struct VCMonogram: Shape {
+struct VCMonogram: Shape {
     enum Piece {
         case joined
         case v

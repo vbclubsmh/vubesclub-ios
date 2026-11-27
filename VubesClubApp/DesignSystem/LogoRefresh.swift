@@ -62,6 +62,8 @@ private struct LogoRefreshLayer: View {
     let refreshing: Bool
 
     @State private var baseline: CGFloat?
+    /// Eşik aşıldığında veya yenilenirken true; bırakınca çizim geri sarmaz, yalnızca solar.
+    @State private var engaged = false
 
     private var pull: CGFloat {
         guard let raw, let baseline else { return 0 }
@@ -70,9 +72,16 @@ private struct LogoRefreshLayer: View {
     }
 
     var body: some View {
+        let progress = min(pull / LogoRefresh.threshold, 1)
+        let held = engaged || refreshing
+
         VStack {
-            LogoRefreshMark(pull: pull, refreshing: refreshing)
-                .offset(y: (baseline ?? 0) + max(0, (pull - LogoRefreshMark.height) / 2) + 4)
+            LogoRefreshMark(
+                drawn: held ? 1 : progress,
+                presence: refreshing ? 1 : held ? min(1, Double(pull) / 34) : Double(min(1, progress * 1.4)),
+                armed: held,
+                refreshing: refreshing)
+                .offset(y: (baseline ?? 0) + max(0, (pull - LogoRefreshMark.height) / 2) + 6)
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -80,43 +89,95 @@ private struct LogoRefreshLayer: View {
         .onChange(of: raw, initial: true) { _, value in
             if baseline == nil, let value { baseline = value }
         }
-        .sensoryFeedback(ClubHaptics.selection, trigger: pull >= LogoRefresh.threshold && !refreshing) { _, armed in armed }
+        .onChange(of: pull) { _, value in
+            if value >= LogoRefresh.threshold {
+                engaged = true
+            } else if value < 1, !refreshing {
+                engaged = false
+            }
+        }
+        .onChange(of: refreshing) { _, now in
+            if now { engaged = true } else if pull < 1 { engaged = false }
+        }
+        .sensoryFeedback(.impact(weight: .light, intensity: 0.45), trigger: progress >= 0.5 && !held) { _, new in new }
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: held) { _, new in new }
+        .sensoryFeedback(.success, trigger: refreshing) { old, new in old && !new }
     }
 }
 
+/// Monogram çekildikçe ince bir çizgiyle kendini çizer, eşikte dolar ve parlar;
+/// yenilenirken üzerinden ışık süzülür, altında yazı logosu belirir.
 private struct LogoRefreshMark: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    static let width: CGFloat = 46
-    static var height: CGFloat { width * 452 / 624 + 6 + width * 96 / 624 }
+    static let width: CGFloat = 58
+    static var monogramHeight: CGFloat { width * 452 / 624 }
+    static var height: CGFloat { monogramHeight + 7 + width * 96 / 624 }
 
-    let pull: CGFloat
+    let drawn: CGFloat
+    let presence: Double
+    let armed: Bool
     let refreshing: Bool
 
-    @State private var breathing = false
+    private static let sweepPeriod = 1.9
 
-    private var progress: CGFloat { min(pull / LogoRefresh.threshold, 1) }
+    private func smooth(_ value: CGFloat, _ low: CGFloat, _ high: CGFloat) -> CGFloat {
+        let t = min(max((value - low) / (high - low), 0), 1)
+        return t * t * (3 - 2 * t)
+    }
 
     var body: some View {
-        let together = refreshing || reduceMotion || progress >= 1
-        let eased = 1 - (1 - progress) * (1 - progress)
+        TimelineView(.animation(paused: !refreshing || reduceMotion)) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            let local = time.truncatingRemainder(dividingBy: Self.sweepPeriod) / Self.sweepPeriod
+            let travel = min(local / 0.66, 1)
+            let sweep = (1 - cos(Double.pi * travel)) / 2
+            let breath = refreshing && !reduceMotion ? (sin(time * 2.7) + 1) / 2 : 0
+            let fill = smooth(drawn, 0.7, 1)
+            let eased = 1 - (1 - drawn) * (1 - drawn)
 
-        VStack(spacing: 6) {
-            SplashMonogram(separation: together ? 0 : (1 - eased) * 26, joined: together)
-                .foregroundStyle(.white)
-                .frame(width: Self.width, height: Self.width * 452 / 624)
-                .scaleEffect(refreshing && !reduceMotion ? (breathing ? 1.08 : 0.95) : 0.72 + 0.28 * eased)
-                .animation(
-                    refreshing && !reduceMotion
-                        ? .easeInOut(duration: 0.85).repeatForever(autoreverses: true)
-                        : .easeOut(duration: 0.18),
-                    value: breathing)
+            VStack(spacing: 7) {
+                ZStack {
+                    VCMonogram()
+                        .trim(from: 0, to: drawn)
+                        .stroke(.white.opacity(1 - 0.55 * fill),
+                                style: StrokeStyle(lineWidth: 1.15, lineCap: .round, lineJoin: .round))
 
-            SplashWordmark(visible: refreshing, reduceMotion: reduceMotion)
-                .frame(width: Self.width, height: Self.width * 96 / 624)
+                    VCMonogram()
+                        .fill(.white.opacity(0.72 * fill))
+
+                    if refreshing && !reduceMotion {
+                        LinearGradient(
+                            colors: [.white.opacity(0), .white, .white.opacity(0)],
+                            startPoint: .leading, endPoint: .trailing)
+                            .frame(width: Self.width * 0.55)
+                            .offset(x: CGFloat(sweep * 1.7 - 0.85) * Self.width)
+                            .mask { VCMonogram().fill(.white) }
+                    }
+                }
+                .frame(width: Self.width, height: Self.monogramHeight)
+                .background {
+                    Circle()
+                        .fill(RadialGradient(
+                            colors: [.white.opacity(0.2 * (0.35 * Double(fill) + 0.65 * breath)), .white.opacity(0)],
+                            center: .center, startRadius: 0, endRadius: Self.width))
+                        .frame(width: Self.width * 2.4, height: Self.width * 2.4)
+                }
+                .scaleEffect(0.8 + 0.2 * eased)
+                .keyframeAnimator(initialValue: CGFloat(1), trigger: armed) { view, scale in
+                    view.scaleEffect(scale)
+                } keyframes: { _ in
+                    KeyframeTrack {
+                        CubicKeyframe(1.13, duration: 0.14)
+                        SpringKeyframe(1, duration: 0.5, spring: .bouncy)
+                    }
+                }
+
+                SplashWordmark(visible: refreshing, reduceMotion: reduceMotion)
+                    .frame(width: Self.width, height: Self.width * 96 / 624)
+            }
+            .opacity(presence)
         }
-        .opacity(refreshing ? 1 : Double(progress))
-        .onChange(of: refreshing) { _, now in breathing = now }
         .accessibilityHidden(true)
     }
 }
