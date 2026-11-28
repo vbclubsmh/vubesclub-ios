@@ -90,6 +90,13 @@ struct APIEventDetail: Decodable {
     let transportNotes: String?
     let accommodation: String?
     let gallery: [MediaReference]?
+    let seats: APIEventSeats?
+}
+
+struct APIEventSeats: Decodable {
+    let capacity: Int
+    let taken: Int
+    let remaining: Int
 }
 
 struct APIPerson: Decodable {

@@ -75,6 +75,7 @@ extension ClubEvent {
             startsAt: base.startsAt, endsAt: base.endsAt, timeZoneID: base.timeZoneID)
         base.featured = featured
         base.programVersion = detail.programVersion
+        base.seats = detail.seats.map { EventSeats(capacity: $0.capacity, taken: $0.taken, remaining: $0.remaining) }
         self = base
     }
 }

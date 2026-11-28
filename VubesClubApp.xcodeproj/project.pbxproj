@@ -140,7 +140,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6F0C5A510000000000000016 /* App.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 28PQ6563K4;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -154,7 +154,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6F0C5A510000000000000016 /* App.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 28PQ6563K4;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Etkinlik girişinde üyelerin QR kodunu okutmak için kamera gerekir.";

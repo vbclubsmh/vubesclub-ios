@@ -110,6 +110,9 @@ struct ClubEvent: Identifiable {
     /// Studio'da "öne çıkar" işaretli etkinlikler listede en üstte durur.
     var featured = false
 
+    /// Kontenjan; yalnız detaydan gelir ve sunucuda canlıdır.
+    var seats: EventSeats?
+
     /// Katılım isteği için sunucudaki program sürümü (yalnız detaydan gelir).
     var programVersion: String?
 
@@ -151,4 +154,15 @@ struct Participant: Identifiable {
     let name: String
     let image: String
     let position: MapPosition
+}
+
+/// Etkinliğin kontenjanı: toplam, dolu (kesin katılım ve geçerli yer ayırma) ve kalan.
+struct EventSeats: Equatable {
+    let capacity: Int
+    let taken: Int
+    let remaining: Int
+
+    var isFull: Bool { remaining == 0 }
+    var isLow: Bool { !isFull && (remaining <= 5 || Double(remaining) / Double(max(capacity, 1)) <= 0.2) }
+    var fraction: Double { min(1, Double(taken) / Double(max(capacity, 1))) }
 }

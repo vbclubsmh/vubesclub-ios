@@ -28,6 +28,11 @@ struct EventDetailsScreen: View {
 
                 VStack(alignment: .leading, spacing: 19) {
                     eventFacts
+
+                    if let seats = event.seats, event.status != .past {
+                        SeatsMeter(seats: seats)
+                    }
+
                     Hairline()
 
                     if event.status == .inProgress {
